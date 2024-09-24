@@ -28,7 +28,10 @@ export default async function PropertyPage({
 }: {
   params: { urlEnd: string }
 }) {
-  const origin = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000" // Fallback to localhost in development
+  const origin =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.VERCEL_URL ||
+    "http://localhost:3000" // Fallback to localhost in development
 
   const property = await fetchData(params.urlEnd, origin)
 
