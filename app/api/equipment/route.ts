@@ -35,7 +35,13 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 }
 // Define allowed origins
-const allowedOrigins = ["http://localhost:3000"]
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://cpm-inventory.site",
+  "https://www.cpm-inventory.site",
+  "https://cpm-inventory-0xrickjames-projects.vercel.app",
+  "https://cpm-inventory.vercel.app",
+]
 
 // Function to get CORS headers based on request origin
 function getCorsHeaders(request: NextRequest) {
