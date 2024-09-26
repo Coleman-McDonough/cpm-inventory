@@ -1,24 +1,20 @@
-// components/PropertyForm.tsx
-import { PropertyEntry } from "../models/EntrySchemas"
+import { MaterialsEntry } from "../models/EntrySchemas"
 
-interface PropertyFormProps {
-  formData: PropertyEntry
+interface MaterialsFormProps {
+  formData: MaterialsEntry
   handleChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void
   handleCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  handleArrayChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-const PropertyForm = ({
+const MaterialsForm = ({
   formData,
   handleChange,
   handleCheckboxChange,
-  handleArrayChange,
-}: PropertyFormProps) => {
+}: MaterialsFormProps) => {
   return (
     <>
-      {/* Input Fields */}
       <label className="block mb-2 w-full">
         Name:
         <input
@@ -30,49 +26,7 @@ const PropertyForm = ({
           className="p-2 border w-full text-black"
         />
       </label>
-      <label className="block mb-2 w-full">
-        Address:
-        <input
-          type="text"
-          name="address"
-          value={formData.address}
-          onChange={handleChange}
-          placeholder="Address"
-          className="p-2 border w-full text-black"
-        />
-      </label>
-      <label className="block mb-2 w-full">
-        Square Footage:
-        <input
-          type="text"
-          name="squareFootage"
-          value={formData.squareFootage}
-          onChange={handleChange}
-          placeholder="Square Footage"
-          className="p-2 border w-full text-black"
-        />
-      </label>
-      <label className="block mb-2 w-full">
-        Price:
-        <input
-          type="text"
-          name="price"
-          value={formData.price}
-          onChange={handleChange}
-          placeholder="Price"
-          className="p-2 border w-full text-black"
-        />
-      </label>
-      <label className="block mb-2 w-full">
-        Description:
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          placeholder="Description"
-          className="p-2 border w-full text-black"
-        />
-      </label>
+
       <label className="block mb-2 w-full">
         Image URL:
         <input
@@ -84,16 +38,42 @@ const PropertyForm = ({
           className="p-2 border w-full text-black"
         />
       </label>
+
       <label className="block mb-2 w-full">
-        Is Rental:
-        <input
-          type="checkbox"
-          name="isRental"
-          checked={formData.isRental}
-          onChange={handleCheckboxChange}
-          className="ml-2"
+        Description:
+        <textarea
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          placeholder="Description"
+          className="p-2 border w-full text-black"
         />
       </label>
+
+      <label className="block mb-2 w-full">
+        Delivery Price:
+        <input
+          type="text"
+          name="deliveryPrice"
+          value={formData.deliveryPrice}
+          onChange={handleChange}
+          placeholder="Delivery Price"
+          className="p-2 border w-full text-black"
+        />
+      </label>
+
+      <label className="block mb-2 w-full">
+        Pickup Price:
+        <input
+          type="text"
+          name="pickupPrice"
+          value={formData.pickupPrice}
+          onChange={handleChange}
+          placeholder="Pickup Price"
+          className="p-2 border w-full text-black"
+        />
+      </label>
+
       <label className="block mb-2 w-full">
         Is Active:
         <input
@@ -104,8 +84,9 @@ const PropertyForm = ({
           className="ml-2"
         />
       </label>
+
       <label className="block mb-2 w-full">
-        Listing Websites (comma-separated):
+        Listing Websites:
         <input
           type="text"
           name="listingWebsites"
@@ -115,6 +96,7 @@ const PropertyForm = ({
           className="p-2 border w-full text-black"
         />
       </label>
+
       <label className="block mb-2 w-full">
         URL End:
         <input
@@ -130,4 +112,4 @@ const PropertyForm = ({
   )
 }
 
-export default PropertyForm
+export default MaterialsForm

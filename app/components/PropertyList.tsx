@@ -16,6 +16,7 @@ interface PropertyEntry {
   isRental: boolean
   listingWebsites: string // `listingWebsites` is a string, not an array
   urlEnd: string // New field for the URL of the page
+  isActive: boolean
 }
 
 // Correct module augmentation to add sorting props

@@ -12,7 +12,8 @@ export interface PropertyEntry {
   imageUrl: string
   isRental: boolean
   listingWebsites: string
-  urlEnd: string // Add URL field for property page
+  urlEnd: string
+  isActive: boolean
 
   // Define other fields as necessary
 }
@@ -27,6 +28,7 @@ export interface UpdatePropertyEntry {
   isRental?: boolean
   listingWebsites?: string
   urlEnd?: string
+  isActive?: boolean
 }
 
 export interface EquipmentEntry {
@@ -37,6 +39,7 @@ export interface EquipmentEntry {
   price: string
   listingWebsites: string
   urlEnd: string // Add URL field for equipment page
+  isActive: boolean
 
   // Define other fields as necessary
 }
@@ -48,9 +51,10 @@ export interface UpdateEquipmentEntry {
   price?: string
   listingWebsites?: string
   urlEnd?: string
+  isActive?: boolean
 }
 
-export interface MaterialEntry {
+export interface MaterialsEntry {
   _id?: string | ObjectId
   name: string
   description: string
@@ -59,11 +63,12 @@ export interface MaterialEntry {
   pickupPrice: string
   listingWebsites: string
   urlEnd: string // Add URL field for material page
+  isActive: boolean
 
   // Define other fields as necessary
 }
 
-export interface UpdateMaterialEntry {
+export interface UpdateMaterialsEntry {
   name?: string
   description?: string
   imageUrl?: string
@@ -71,4 +76,5 @@ export interface UpdateMaterialEntry {
   pickupPrice?: string
   listingWebsites?: string
   urlEnd?: string
+  isActive?: boolean
 }

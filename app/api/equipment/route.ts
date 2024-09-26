@@ -1,47 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import { connectToMongodbEquipment } from "../../lib/mongodb"
+import { connectToMongodbEquipment } from "../../lib/mongodb" // Update the MongoDB connection to handle equipment
 import { EquipmentEntry } from "@/app/models/EntrySchemas"
+import { ObjectId } from "mongodb"
 
-// Handles GET requests to /api
-export async function GET(request: Request): Promise<NextResponse> {
-  try {
-    // Connect to MongoDB
-    const { db } = await connectToMongodbEquipment()
-
-    // Fetch data from the toy_locker collection
-    const cursor = db.collection<EquipmentEntry>("properties").find({})
-    const allDocuments: EquipmentEntry[] = await cursor.toArray() // Type the array of documents
-
-    // Map over the array of documents to select only the unitNumber and renterName fields
-    const selectedFields = allDocuments.map((doc) => ({
-      name: doc.name,
-      description: doc.description,
-      imageUrl: doc.imageUrl,
-      price: doc.price,
-      listingWebsites: doc.listingWebsites,
-      urlEnd: doc.urlEnd,
-    }))
-
-    // Return the selected fields as JSON
-    return NextResponse.json(selectedFields)
-  } catch (error) {
-    console.error("Error fetching data from MongoDB:", error)
-
-    // Return an error response
-    return NextResponse.json(
-      { message: "Failed to fetch data" },
-      { status: 500 }
-    )
-  }
-}
 // Define allowed origins
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://cpm-inventory.site",
-  "https://www.cpm-inventory.site",
-  "https://cpm-inventory-0xrickjames-projects.vercel.app",
-  "https://cpm-inventory.vercel.app",
-]
+const allowedOrigins = ["http://localhost:3000"]
 
 // Function to get CORS headers based on request origin
 function getCorsHeaders(request: NextRequest) {
@@ -57,6 +20,7 @@ function getCorsHeaders(request: NextRequest) {
 
   return corsHeaders
 }
+
 // Handle OPTIONS method for CORS preflight
 export async function OPTIONS(request: NextRequest): Promise<NextResponse> {
   const corsHeaders = getCorsHeaders(request)
@@ -66,64 +30,228 @@ export async function OPTIONS(request: NextRequest): Promise<NextResponse> {
   })
 }
 
+// GET: Retrieve all equipment entries or a specific one by _id or urlEnd
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("_id")
+    const urlEnd = searchParams.get("urlEnd") // Capture the `urlEnd` parameter
+
+    const { db } = await connectToMongodbEquipment() // Connect to equipment collection
+
+    if (id) {
+      // Fetch a single equipment item by _id
+      const objectId = new ObjectId(id)
+      const equipment = await db
+        .collection<EquipmentEntry>("equipment")
+        .findOne({ _id: objectId })
+
+      if (equipment) {
+        return NextResponse.json(equipment)
+      } else {
+        return NextResponse.json(
+          { message: "Equipment not found" },
+          { status: 404 }
+        )
+      }
+    } else if (urlEnd) {
+      // Fetch a single equipment item by `urlEnd`
+      const equipment = await db
+        .collection<EquipmentEntry>("equipment")
+        .findOne({ urlEnd })
+
+      if (equipment) {
+        return NextResponse.json(equipment)
+      } else {
+        return NextResponse.json(
+          { message: "Equipment not found" },
+          { status: 404 }
+        )
+      }
+    } else {
+      // Fetch all equipment if no specific id or urlEnd is provided
+      const equipmentList = await db
+        .collection<EquipmentEntry>("equipment")
+        .find({})
+        .toArray()
+      return NextResponse.json(equipmentList)
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error fetching data from MongoDB:", error.message)
+      return NextResponse.json(
+        { message: `Failed to fetch data: ${error.message}` },
+        { status: 500 }
+      )
+    }
+    return NextResponse.json(
+      { message: "Unknown error occurred" },
+      { status: 500 }
+    )
+  }
+}
+
+// POST: Create a new equipment entry
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  try {
+    const requestBody = await request.json()
+    const {
+      name,
+      description,
+      price,
+      listingWebsites,
+      urlEnd,
+      isActive,
+      imageUrl, // Added imageUrl field
+    } = requestBody
+
+    const { db } = await connectToMongodbEquipment() // Connect to equipment collection
+
+    // Insert the new equipment
+    const newEquipment: EquipmentEntry = {
+      name,
+      description,
+      price,
+      listingWebsites,
+      urlEnd,
+      isActive,
+      imageUrl, // Handle imageUrl
+    }
+
+    const result = await db
+      .collection<EquipmentEntry>("equipment")
+      .insertOne(newEquipment)
+
+    if (result.acknowledged) {
+      return NextResponse.json(
+        { message: "Equipment added successfully", _id: result.insertedId },
+        { status: 201 }
+      )
+    } else {
+      return NextResponse.json(
+        { message: "Failed to add equipment" },
+        { status: 500 }
+      )
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error handling POST request:", error.message)
+      return NextResponse.json(
+        { message: `Failed to create equipment: ${error.message}` },
+        { status: 500 }
+      )
+    }
+    return NextResponse.json(
+      { message: "Unknown error occurred" },
+      { status: 500 }
+    )
+  }
+}
+
+// PUT: Update an equipment entry by _id
 export async function PUT(request: NextRequest): Promise<NextResponse> {
-  const corsHeaders = getCorsHeaders(request)
   try {
     const requestBody = await request.json()
     const { _id, ...updateData } = requestBody
 
     if (!_id) {
-      return NextResponse.json(
-        { message: "_id is required" },
-        { status: 400, headers: corsHeaders }
-      ) // Use 400 for bad request
+      return NextResponse.json({ message: "_id is required" }, { status: 400 }) // Use 400 for bad request
     }
 
-    const { db } = await connectToMongodbEquipment()
+    const { db } = await connectToMongodbEquipment() // Connect to equipment collection
+
+    // If _id is a string, cast it to ObjectId
+    const objectId = typeof _id === "string" ? new ObjectId(_id) : _id
 
     // Manually set default values for fields that should have them
     const updateObject = {
       $set: {
         ...updateData, // Spread updateData to include all fields to be updated
         name: updateData.name || "",
-        price: updateData.price || 0,
         description: updateData.description || "",
-        imageUrl: updateData.imageUrl || "",
+        price: updateData.price || 0,
         listingWebsites: updateData.listingWebsites || "",
         urlEnd: updateData.urlEnd || "",
+        isActive: updateData.isActive || false,
+        imageUrl: updateData.imageUrl || "", // Handle imageUrl update
       },
     }
 
+    // Update the equipment using _id
     const result = await db
       .collection<EquipmentEntry>("equipment")
-      .updateOne({ _id }, updateObject, { upsert: true })
+      .updateOne({ _id: objectId }, updateObject, { upsert: true })
 
     if (result.matchedCount === 0 && result.upsertedCount > 0) {
       return NextResponse.json(
-        { message: "New equipment added" },
+        { message: "New equipment added", _id: objectId },
         { status: 201 }
       ) // Use 201 for Created
     } else if (result.modifiedCount > 0) {
       return NextResponse.json(
-        { message: "Equipment updated successfully" },
-        { status: 200, headers: corsHeaders }
+        { message: "Equipment updated successfully", _id: objectId },
+        { status: 200 }
       ) // Use 200 for OK
-    } else if (result.modifiedCount > 0) {
-      return NextResponse.json(
-        { message: "Equipment updated successfully" },
-        { status: 200, headers: corsHeaders }
-      )
     } else {
-      // If the update didn't change anything, it's unusual but not necessarily an error.
-      // You might want to log this situation or handle it differently.
-      console.log("Update did not change anything")
       return NextResponse.json({ message: "No changes made" }, { status: 200 }) // Use 200 OK for consistency
     }
-  } catch (error: any) {
-    console.error("Error handling PUT request:", error)
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error handling PUT request:", error.message)
+      return NextResponse.json(
+        { message: `Failed to update equipment: ${error.message}` },
+        { status: 500 }
+      )
+    }
     return NextResponse.json(
-      { message: `Failed to update or create unit: ${error.message}` },
-      { status: 500, headers: corsHeaders }
-    ) // Use 500 for Internal Server Error
+      { message: "Unknown error occurred" },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE: Delete an equipment entry by _id
+export async function DELETE(request: NextRequest): Promise<NextResponse> {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("_id")
+
+    if (!id) {
+      return NextResponse.json({ message: "_id is required" }, { status: 400 }) // Use 400 for bad request
+    }
+
+    const { db } = await connectToMongodbEquipment() // Connect to equipment collection
+
+    // Cast _id to ObjectId
+    const objectId = new ObjectId(id)
+
+    // Delete the equipment using _id
+    const result = await db
+      .collection<EquipmentEntry>("equipment")
+      .deleteOne({ _id: objectId })
+
+    if (result.deletedCount === 1) {
+      return NextResponse.json(
+        { message: "Equipment deleted successfully" },
+        { status: 200 }
+      )
+    } else {
+      return NextResponse.json(
+        { message: "Equipment not found" },
+        { status: 404 }
+      )
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error handling DELETE request:", error.message)
+      return NextResponse.json(
+        { message: `Failed to delete equipment: ${error.message}` },
+        { status: 500 }
+      )
+    }
+    return NextResponse.json(
+      { message: "Unknown error occurred" },
+      { status: 500 }
+    )
   }
 }

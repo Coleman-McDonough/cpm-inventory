@@ -3,77 +3,71 @@ import { useTable, useSortBy, Column } from "react-table"
 import { fetchData } from "../lib/fetchData"
 import { formatStringAsNumber } from "../lib/helpers"
 
-// Equipment type definition
-interface EquipmentEntry {
+interface MaterialEntry {
   _id?: string
   name: string
-  description: string
-  price: string
   imageUrl: string
-  listingWebsites: string // `listingWebsites` is a string, not an array
-  urlEnd: string // URL for the equipment page
+  description: string
+  deliveryPrice: string
+  pickupPrice: string
   isActive: boolean
+  listingWebsites: string
+  urlEnd: string
 }
 
-// Correct module augmentation to add sorting props
 import { UseSortByColumnOptions, UseSortByColumnProps } from "react-table"
 
 declare module "react-table" {
   export interface ColumnInstance<D extends object = {}>
     extends UseSortByColumnProps<D> {}
-
   export interface ColumnInterface<D extends object = {}>
     extends UseSortByColumnOptions<D> {}
 }
 
-const EquipmentList = () => {
-  const [equipment, setEquipment] = useState<EquipmentEntry[]>([])
+const MaterialList = () => {
+  const [materials, setMaterials] = useState<MaterialEntry[]>([])
 
   useEffect(() => {
-    fetchData("/api/equipment").then((data) => setEquipment(data))
+    fetchData("/api/materials").then((data) => setMaterials(data))
   }, [])
 
-  // Memoized columns to prevent re-creation on each render
-  const columns: Column<EquipmentEntry>[] = useMemo(
+  const columns: Column<MaterialEntry>[] = useMemo(
     () => [
       {
-        Header: "Equipment Name",
+        Header: "Material Name",
         accessor: "name",
       },
       {
-        Header: "Description",
-        accessor: "description",
+        Header: "Delivery Price",
+        accessor: "deliveryPrice",
         Cell: ({ value }: { value: string }) =>
-          value.length > 50 ? `${value.substring(0, 50)}...` : value, // Truncate long descriptions
+          `$${formatStringAsNumber(value)}`,
       },
       {
-        Header: "Price",
-        accessor: "price",
+        Header: "Pickup Price",
+        accessor: "pickupPrice",
         Cell: ({ value }: { value: string }) =>
-          `$${formatStringAsNumber(value)}`, // Correctly type Cell for number
+          `$${formatStringAsNumber(value)}`,
       },
-      /*
       {
-        Header: "Is Active",
+        Header: "Active",
         accessor: "isActive",
-        Cell: ({ value }: { value: boolean }) => (value ? "Yes" : "No"), // Correctly type Cell for boolean
+        Cell: ({ value }: { value: boolean }) => (value ? "Yes" : "No"),
       },
       {
         Header: "Listing Websites",
-        accessor: "listingWebsites", // Render listingWebsites as plain text
+        accessor: "listingWebsites",
       },
-      */
     ],
     []
   )
 
-  // Create table instance using useTable and useSortBy hooks
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable({ columns, data: equipment }, useSortBy) // Apply useSortBy
+    useTable({ columns, data: materials }, useSortBy)
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Equipment</h1>
+      <h1 className="text-2xl font-bold mb-4">Materials</h1>
       <table
         {...getTableProps()}
         className="min-w-full bg-white text-black shadow-md rounded"
@@ -83,12 +77,11 @@ const EquipmentList = () => {
             <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
               {headerGroup.headers.map((column) => (
                 <th
-                  {...column.getHeaderProps(column.getSortByToggleProps())} // Sorting props at the column level
-                  className="md:px-4 md:py-2 border border-black"
+                  {...column.getHeaderProps(column.getSortByToggleProps())}
+                  className="md:px-4 md:py-2  border border-black"
                   key={column.id}
                 >
                   {column.render("Header")}
-                  {/* Sorting indicators */}
                   <span>
                     {column.isSorted
                       ? column.isSortedDesc
@@ -109,7 +102,7 @@ const EquipmentList = () => {
                 {...row.getRowProps()}
                 className="hover:bg-gray-700 cursor-pointer"
                 key={row.id}
-                onClick={() => (window.location.href = row.original.urlEnd)} // Redirect to urlEnd when row is clicked
+                onClick={() => (window.location.href = row.original.urlEnd)}
               >
                 {row.cells.map((cell) => (
                   <td
@@ -129,4 +122,4 @@ const EquipmentList = () => {
   )
 }
 
-export default EquipmentList
+export default MaterialList

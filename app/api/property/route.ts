@@ -105,6 +105,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       isRental,
       listingWebsites,
       urlEnd,
+      isActive,
     } = requestBody
 
     const { db } = await connectToMongodbProperties()
@@ -120,6 +121,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       isRental,
       listingWebsites,
       urlEnd,
+      isActive,
     }
 
     const result = await db
@@ -180,6 +182,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         isRental: updateData.isRental || false,
         listingWebsites: updateData.listingWebsites || "",
         urlEnd: updateData.urlEnd || "",
+        isActive: updateData.isActive || false,
       },
     }
 

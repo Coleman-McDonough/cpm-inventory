@@ -1,5 +1,10 @@
 import { notFound } from "next/navigation" // Next.js App Router's way of handling 404s
-import { PropertyEntry } from "../models/EntrySchemas"
+import {
+  PropertyEntry,
+  EquipmentEntry,
+  MaterialsEntry,
+} from "../models/EntrySchemas"
+import { formatStringAsNumber } from "../lib/helpers"
 
 interface Props {
   params: {
@@ -7,23 +12,23 @@ interface Props {
   }
 }
 
-// Mocked fetchData function for demo purposes, replace with actual data fetching logic
+// Fetch data from either property, equipment, or materials based on the type
 async function fetchData(
   urlEnd: string,
-  origin: string
-): Promise<PropertyEntry | null> {
-  const response = await fetch(`${origin}/api/property?urlEnd=${urlEnd}`)
+  origin: string,
+  type: "property" | "equipment" | "materials"
+): Promise<PropertyEntry | EquipmentEntry | MaterialsEntry | null> {
+  const response = await fetch(`${origin}/api/${type}?urlEnd=${urlEnd}`)
 
   if (!response.ok) {
-    // Handle error or not found
     return null
   }
 
-  const property = await response.json()
-  return property || null
+  const data = await response.json()
+  return data || null
 }
 
-export default async function PropertyPage({
+export default async function PropertyOrEquipmentOrMaterialPage({
   params,
 }: {
   params: { urlEnd: string }
@@ -33,43 +38,86 @@ export default async function PropertyPage({
     process.env.VERCEL_URL ||
     "http://localhost:3000" // Fallback to localhost in development
 
-  const property = await fetchData(params.urlEnd, origin)
+  // Try fetching from materials first, then equipment, then properties
+  let entry = await fetchData(params.urlEnd, origin, "materials")
+  let type: "property" | "equipment" | "materials" = "materials"
 
-  if (!property) {
+  if (!entry) {
+    entry = await fetchData(params.urlEnd, origin, "equipment")
+    type = "equipment"
+  }
+
+  if (!entry) {
+    entry = await fetchData(params.urlEnd, origin, "property")
+    type = "property"
+  }
+
+  if (!entry) {
     notFound()
   }
 
   return (
     <div className="container mx-auto p-4 align-middle bg-white text-black">
-      <div className="flex justify-between items-center  mb-4">
-        <h1 className="text-2xl font-bold">{property.name}</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">{entry.name}</h1>
         <a href={`/`} className="p-2 bg-green-500 text-white rounded">
           Go Back
         </a>
       </div>
       <img
-        src={property.imageUrl}
-        alt={property.name}
+        src={entry.imageUrl}
+        alt={entry.name}
         className="w-full h-96 object-cover mb-4"
       />
+
+      {/* Conditionally render fields based on whether it's property, equipment, or materials */}
+      {type === "property" && (
+        <>
+          <p className="border-2 p-1">
+            <strong>Address:</strong> {(entry as PropertyEntry).address}
+          </p>
+          <p className="border-2 p-1">
+            <strong>Square Footage:</strong>{" "}
+            {formatStringAsNumber((entry as PropertyEntry).squareFootage)}
+          </p>
+          <p className="border-2 p-1">
+            <strong>Rental Status:</strong>{" "}
+            {(entry as PropertyEntry).isRental ? "For Rent" : "For Sale"}
+          </p>
+        </>
+      )}
+
+      {type === "equipment" && (
+        <>
+          <p className="border-2 p-1">
+            <strong>Price:</strong> $
+            {formatStringAsNumber((entry as EquipmentEntry).price)}
+          </p>
+        </>
+      )}
+
+      {type === "materials" && (
+        <>
+          <p className="border-2 p-1">
+            <strong>Delivery Price:</strong> $
+            {formatStringAsNumber((entry as MaterialsEntry).deliveryPrice)}
+          </p>
+          <p className="border-2 p-1">
+            <strong>Pickup Price:</strong> $
+            {formatStringAsNumber((entry as MaterialsEntry).pickupPrice)}
+          </p>
+        </>
+      )}
+
+      {/* Common fields for all types */}
       <p className="border-2 p-1">
-        <strong>Address:</strong> {property.address}
+        <strong>Description:</strong> {entry.description}
       </p>
       <p className="border-2 p-1">
-        <strong>Square Footage:</strong> {property.squareFootage}
+        <strong>Active:</strong> {entry.isActive ? "Yes" : "No"}
       </p>
       <p className="border-2 p-1">
-        <strong>Price:</strong> ${property.price.toLocaleString()}
-      </p>
-      <p className="border-2 p-1">
-        <strong>Description:</strong> {property.description}
-      </p>
-      <p className="border-2 p-1">
-        <strong>Rental Status:</strong>{" "}
-        {property.isRental ? "For Rent" : "For Sale"}
-      </p>
-      <p className="border-2 p-1">
-        <strong>Listing Websites:</strong> {property.listingWebsites}
+        <strong>Listing Websites:</strong> {entry.listingWebsites}
       </p>
     </div>
   )

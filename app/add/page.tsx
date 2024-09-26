@@ -3,12 +3,12 @@
 import { useState } from "react"
 import PropertyForm from "../components/PropertyForm"
 import { signIn, signOut, useSession } from "next-auth/react"
-//import EquipmentForm from "../components/EquipmentForm"
-//import MaterialForm from "../components/MaterialForm"
+import EquipmentForm from "../components/EquipmentForm"
+import MaterialsForm from "../components/MaterialsForm"
 import {
   PropertyEntry,
   EquipmentEntry,
-  MaterialEntry,
+  MaterialsEntry,
 } from "../models/EntrySchemas" // Import your models
 
 const AddEntryPage = () => {
@@ -29,7 +29,7 @@ const AddEntryPage = () => {
 
   // State to track form data based on the entry type
   const [formData, setFormData] = useState<
-    PropertyEntry | EquipmentEntry | MaterialEntry
+    PropertyEntry | EquipmentEntry | MaterialsEntry
   >({
     name: "",
     address: "",
@@ -39,7 +39,8 @@ const AddEntryPage = () => {
     imageUrl: "",
     isRental: false,
     listingWebsites: "",
-    urlEnd: "", // Add URL field for property page
+    urlEnd: "",
+    isActive: false,
   })
 
   // Handle input change
@@ -107,23 +108,25 @@ const AddEntryPage = () => {
             handleArrayChange={handleArrayChange}
           />
         )
-        {
-          /*
+
       case "equipment":
         return (
           <EquipmentForm
             formData={formData as EquipmentEntry}
             handleChange={handleChange}
+            handleCheckboxChange={handleCheckboxChange}
           />
         )
+
       case "materials":
         return (
-          <MaterialForm
-            formData={formData as MaterialEntry}
+          <MaterialsForm
+            formData={formData as MaterialsEntry}
             handleChange={handleChange}
+            handleCheckboxChange={handleCheckboxChange}
           />
-        )*/
-        }
+        )
+
       default:
         return null
     }
@@ -173,6 +176,7 @@ const AddEntryPage = () => {
                         isRental: false,
                         listingWebsites: "", // Reset as needed
                         urlEnd: "", // Reset as needed
+                        isActive: false,
                       })
                     }}
                     className="p-2 border text-black"
