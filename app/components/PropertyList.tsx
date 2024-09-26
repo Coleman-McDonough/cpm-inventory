@@ -57,8 +57,12 @@ const PropertyList = ({ isActiveFilter }: PropertyListProps) => {
       {
         Header: "Price",
         accessor: "price",
-        Cell: ({ value }: { value: string }) =>
-          `$${formatStringAsNumber(value)}`,
+        Cell: ({ row }) => {
+          // Access both the price and isRental values
+          const price = row.original.price
+          const isRental = row.original.isRental
+          return `$${formatStringAsNumber(price)}${isRental ? " /ft" : ""}`
+        },
       },
       /*
       {
