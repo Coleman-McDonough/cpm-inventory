@@ -61,7 +61,7 @@ const PropertyList = ({ isActiveFilter }: PropertyListProps) => {
           // Access both the price and isRental values
           const price = row.original.price
           const isRental = row.original.isRental
-          return `$${formatStringAsNumber(price)}${isRental ? " /ft" : ""}`
+          return `$${formatStringAsNumber(price)}`
         },
       },
       /*
