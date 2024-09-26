@@ -51,6 +51,7 @@ const MaterialsList = ({ isActiveFilter }: MaterialsListProps) => {
         Cell: ({ value }: { value: string }) =>
           `$${formatStringAsNumber(value)}`,
       },
+      /*
       {
         Header: "Active",
         accessor: "isActive",
@@ -60,6 +61,7 @@ const MaterialsList = ({ isActiveFilter }: MaterialsListProps) => {
         Header: "Listing Websites",
         accessor: "listingWebsites",
       },
+      */
     ],
     []
   )
