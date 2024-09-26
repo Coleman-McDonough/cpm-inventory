@@ -2,18 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useTable, useSortBy, Column } from "react-table"
 import { fetchData } from "../lib/fetchData"
 import { formatStringAsNumber } from "../lib/helpers"
-
-// Equipment type definition
-interface EquipmentEntry {
-  _id?: string
-  name: string
-  description: string
-  price: string
-  imageUrl: string
-  listingWebsites: string // `listingWebsites` is a string, not an array
-  urlEnd: string // URL for the equipment page
-  isActive: boolean
-}
+import { EquipmentEntry } from "../models/EntrySchemas"
 
 // Correct module augmentation to add sorting props
 import { UseSortByColumnOptions, UseSortByColumnProps } from "react-table"
@@ -26,12 +15,25 @@ declare module "react-table" {
     extends UseSortByColumnOptions<D> {}
 }
 
-const EquipmentList = () => {
+interface EquipmentListProps {
+  isActiveFilter: boolean
+}
+
+const EquipmentList = ({ isActiveFilter }: EquipmentListProps) => {
   const [equipment, setEquipment] = useState<EquipmentEntry[]>([])
 
   useEffect(() => {
     fetchData("/api/equipment").then((data) => setEquipment(data))
   }, [])
+
+  // Filter the equipment based on the isActive filter
+  const filteredEquipment = useMemo(
+    () =>
+      equipment.filter((equipmentPiece) =>
+        isActiveFilter ? equipmentPiece.isActive : true
+      ),
+    [equipment, isActiveFilter]
+  )
 
   // Memoized columns to prevent re-creation on each render
   const columns: Column<EquipmentEntry>[] = useMemo(
@@ -69,7 +71,7 @@ const EquipmentList = () => {
 
   // Create table instance using useTable and useSortBy hooks
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable({ columns, data: equipment }, useSortBy) // Apply useSortBy
+    useTable({ columns, data: filteredEquipment }, useSortBy) // Apply useSortBy
 
   return (
     <div className="container mx-auto p-4">

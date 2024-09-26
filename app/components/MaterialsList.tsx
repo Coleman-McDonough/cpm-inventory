@@ -2,18 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useTable, useSortBy, Column } from "react-table"
 import { fetchData } from "../lib/fetchData"
 import { formatStringAsNumber } from "../lib/helpers"
-
-interface MaterialEntry {
-  _id?: string
-  name: string
-  imageUrl: string
-  description: string
-  deliveryPrice: string
-  pickupPrice: string
-  isActive: boolean
-  listingWebsites: string
-  urlEnd: string
-}
+import { MaterialsEntry } from "../models/EntrySchemas"
 
 import { UseSortByColumnOptions, UseSortByColumnProps } from "react-table"
 
@@ -24,14 +13,27 @@ declare module "react-table" {
     extends UseSortByColumnOptions<D> {}
 }
 
-const MaterialList = () => {
-  const [materials, setMaterials] = useState<MaterialEntry[]>([])
+interface MaterialsListProps {
+  isActiveFilter: boolean
+}
+
+const MaterialsList = ({ isActiveFilter }: MaterialsListProps) => {
+  const [materials, setMaterials] = useState<MaterialsEntry[]>([])
 
   useEffect(() => {
     fetchData("/api/materials").then((data) => setMaterials(data))
   }, [])
 
-  const columns: Column<MaterialEntry>[] = useMemo(
+  // Filter the materials based on the isActive filter
+  const filteredMaterials = useMemo(
+    () =>
+      materials.filter((material) =>
+        isActiveFilter ? material.isActive : true
+      ),
+    [materials, isActiveFilter]
+  )
+
+  const columns: Column<MaterialsEntry>[] = useMemo(
     () => [
       {
         Header: "Material Name",
@@ -63,7 +65,7 @@ const MaterialList = () => {
   )
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable({ columns, data: materials }, useSortBy)
+    useTable({ columns, data: filteredMaterials }, useSortBy)
 
   return (
     <div className="container mx-auto p-4">
@@ -122,4 +124,4 @@ const MaterialList = () => {
   )
 }
 
-export default MaterialList
+export default MaterialsList
