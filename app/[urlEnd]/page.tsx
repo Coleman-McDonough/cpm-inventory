@@ -25,6 +25,8 @@ async function fetchData(
   }
 
   const data = await response.json()
+
+  console.log(data)
   return data || null
 }
 
