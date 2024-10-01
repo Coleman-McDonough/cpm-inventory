@@ -6,6 +6,8 @@ import {
 } from "../models/EntrySchemas"
 import { formatStringAsNumber } from "../lib/helpers"
 
+export const revalidate = 0 // Disable ISR and ensure the page is always fetched dynamically
+
 interface Props {
   params: {
     urlEnd: string // Dynamic route parameter
@@ -18,7 +20,9 @@ async function fetchData(
   origin: string,
   type: "property" | "equipment" | "materials"
 ): Promise<PropertyEntry | EquipmentEntry | MaterialsEntry | null> {
-  const response = await fetch(`${origin}/api/${type}?urlEnd=${urlEnd}`)
+  const response = await fetch(`${origin}/api/${type}?urlEnd=${urlEnd}`, {
+    cache: "no-store", // Ensure fresh data on each request
+  })
 
   if (!response.ok) {
     return null
