@@ -140,7 +140,7 @@ const AddEntryPage = () => {
         </button>
       ) : (
         <div className="flex">
-          <h2 className="mt-4">Logged in as: {session?.user?.email}</h2>
+          {/*<h2 className="mt-4">{session?.user?.email}</h2>*/}
           <button
             onClick={() => signOut()}
             className="p-2 m-2 font-bold bg-slate-700"
@@ -150,9 +150,17 @@ const AddEntryPage = () => {
         </div>
       )}
 
+      <div className="flex">
+        <a className="p-2 m-2 font-bold bg-slate-500" href="/">
+          Home
+        </a>
+        <a className="p-2 m-2 font-bold bg-slate-500" href="/admin">
+          Admin
+        </a>
+      </div>
       {session && (
         <div>
-          <div className="container mx-auto">
+          <div className="container mx-auto bg-white text-black">
             {/* Conditionally render content based on the user's email */}
             {hasAccess ? (
               <div className="container mx-auto p-4 lg:max-w-3xl">

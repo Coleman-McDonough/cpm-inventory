@@ -45,6 +45,11 @@ function MainPage() {
       <div className="container mx-auto p-4">
         <h1 className="text-3xl font-bold text-center m-4">CPM Inventory</h1>
 
+        <div className="flex items-center justify-center -mt-4">
+          <a className=" p-2 m-2 font-bold bg-slate-500" href="/admin">
+            Admin
+          </a>
+        </div>
         {/* Checkbox to toggle "Active" filter */}
         <div className="flex items-center justify-center mb-4">
           <label className="mr-2">

@@ -105,7 +105,7 @@ const PropertyForm = ({
         />
       </label>
       <label className="block mb-2 w-full">
-        Listing Websites (comma-separated):
+        Listing Websites:
         <input
           type="text"
           name="listingWebsites"
