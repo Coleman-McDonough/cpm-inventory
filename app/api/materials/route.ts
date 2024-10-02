@@ -178,15 +178,26 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const { db: dbProperties } = await connectToMongodbProperties()
     const { db: dbEquipment } = await connectToMongodbEquipment()
 
-    const uniqueUrlEnd = await generateUniqueUrlEnd(
-      dbProperties,
-      dbEquipment,
-      db,
-      updateData.urlEnd
-    )
+    const objectId = typeof _id === "string" ? new ObjectId(_id) : _id
 
-    // If _id is a string, cast it to ObjectId
-    const objectId = new ObjectId(_id)
+    const existingProperty = await db
+      .collection<MaterialsEntry>("materials")
+      .findOne({ _id: objectId })
+
+    let uniqueUrlEnd = updateData.urlEnd
+
+    if (
+      existingProperty &&
+      updateData.urlEnd &&
+      updateData.urlEnd !== existingProperty.urlEnd
+    ) {
+      uniqueUrlEnd = await generateUniqueUrlEnd(
+        dbProperties,
+        dbEquipment,
+        db,
+        updateData.urlEnd
+      )
+    }
 
     const updateObject = {
       $set: {

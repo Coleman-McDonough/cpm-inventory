@@ -176,15 +176,26 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const { db: dbMaterials } = await connectToMongodbMaterials()
     const { db: dbProperties } = await connectToMongodbProperties()
 
-    const uniqueUrlEnd = await generateUniqueUrlEnd(
-      dbProperties,
-      db,
-      dbMaterials,
-      updateData.urlEnd
-    )
-
-    // If _id is a string, cast it to ObjectId
     const objectId = typeof _id === "string" ? new ObjectId(_id) : _id
+
+    const existingProperty = await db
+      .collection<EquipmentEntry>("equipment")
+      .findOne({ _id: objectId })
+
+    let uniqueUrlEnd = updateData.urlEnd
+
+    if (
+      existingProperty &&
+      updateData.urlEnd &&
+      existingProperty.urlEnd !== updateData.urlEnd
+    ) {
+      uniqueUrlEnd = await generateUniqueUrlEnd(
+        dbProperties,
+        db,
+        dbMaterials,
+        updateData.urlEnd
+      )
+    }
 
     // Manually set default values for fields that should have them
     const updateObject = {
