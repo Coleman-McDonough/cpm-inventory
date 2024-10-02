@@ -10,6 +10,7 @@ import {
   MaterialsEntry,
 } from "../models/EntrySchemas"
 import { signIn, signOut, useSession } from "next-auth/react"
+import AddEntryModal from "../components/AddEntryModal"
 
 // Fetch properties, equipment, or materials
 async function fetchItems(type: "property" | "equipment" | "materials") {
@@ -65,6 +66,7 @@ const AdminMainPage = () => {
     PropertyEntry | EquipmentEntry | MaterialsEntry | null
   >(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [currentType, setCurrentType] = useState<
     "property" | "equipment" | "materials" | null
   >(null)
@@ -72,10 +74,13 @@ const AdminMainPage = () => {
 
   // Access control
   const hasAccess =
-    session &&
-    ["admin@example.com", "rickmcfarley@gmail.com"].includes(
-      session.user?.email ?? ""
-    )
+    (session &&
+      session.user?.email === "cpmcdonoughconstructioncorp@gmail.com") ||
+    (session && session.user?.email === "colemanpmcdonough@gmail.com") ||
+    (session && session.user?.email === "rickmcfarley@gmail.com") ||
+    //(session && session.user?.email === "dobrien274@gmail.com") ||
+    (session && session.user?.email === "patdawagon@gmail.com") ||
+    false
 
   // Fetch data when component mounts
   useEffect(() => {
@@ -148,6 +153,19 @@ const AdminMainPage = () => {
     }
   }
 
+  const handleDeleteClick = (
+    id: string,
+    type: "property" | "equipment" | "materials"
+  ) => {
+    if (confirm("Are you sure you want to delete this item?")) {
+      handleDelete(id, type)
+    }
+  }
+
+  const handleAddClick = () => {
+    setIsAddModalOpen(true)
+  }
+
   const handleClose = () => {
     setIsModalOpen(false)
     setSelectedItem(null)
@@ -175,11 +193,16 @@ const AdminMainPage = () => {
         <a className="p-2 m-2 font-bold bg-slate-500" href="/">
           Home
         </a>
-        <a className="p-2 m-2 font-bold bg-slate-500" href="/add">
+        <button
+          className={`p-2 m-2 font-bold bg-slate-500 ${
+            hasAccess ? "" : "hidden"
+          }`}
+          onClick={() => setIsAddModalOpen(true)}
+        >
           Add
-        </a>
+        </button>
       </div>
-      {session && (
+      {session && hasAccess && (
         <div className="container mx-auto p-4 bg-white text-black min-h-screen max-w-xl">
           <h1 className="text-3xl font-bold text-center mb-4">
             CPM Inventory Management Admin
@@ -252,7 +275,10 @@ const AdminMainPage = () => {
                         </button>
                         <button
                           onClick={() =>
-                            handleDelete(property._id?.toString()!, "property")
+                            handleDeleteClick(
+                              property._id?.toString()!,
+                              "property"
+                            )
                           }
                           className="p-2 bg-red-500 text-white rounded"
                         >
@@ -286,7 +312,7 @@ const AdminMainPage = () => {
                         </button>
                         <button
                           onClick={() =>
-                            handleDelete(eq._id?.toString()!, "equipment")
+                            handleDeleteClick(eq._id?.toString()!, "equipment")
                           }
                           className="p-2 bg-red-500 text-white rounded"
                         >
@@ -322,7 +348,10 @@ const AdminMainPage = () => {
                         </button>
                         <button
                           onClick={() =>
-                            handleDelete(material._id?.toString()!, "materials")
+                            handleDeleteClick(
+                              material._id?.toString()!,
+                              "materials"
+                            )
                           }
                           className="p-2 bg-red-500 text-white rounded"
                         >
@@ -334,7 +363,11 @@ const AdminMainPage = () => {
               </ul>
             </div>
           )}
-
+          <AddEntryModal
+            isOpen={isAddModalOpen}
+            onClose={() => setIsAddModalOpen(false)}
+            hasAccess={hasAccess}
+          />
           {/* Modal for updating selected item */}
           {isModalOpen && selectedItem && (
             <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-75 flex justify-center items-center">
@@ -384,6 +417,13 @@ const AdminMainPage = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+      {session && !hasAccess && (
+        <div className="container mx-auto p-4">
+          <h1 className="text-3xl font-bold text-center m-4">
+            You do not have access to this page
+          </h1>
         </div>
       )}
     </div>

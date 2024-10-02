@@ -49,31 +49,31 @@ const MaterialsForm = ({
           className="p-2 border w-full text-black"
         />
       </label>
+      <div className="flex flex-row">
+        <label className="block mb-2 w-full mr-2">
+          Delivery Price:
+          <input
+            type="text"
+            name="deliveryPrice"
+            value={formData.deliveryPrice}
+            onChange={handleChange}
+            placeholder="Delivery Price"
+            className="p-2 border w-full text-black"
+          />
+        </label>
 
-      <label className="block mb-2 w-full">
-        Delivery Price:
-        <input
-          type="text"
-          name="deliveryPrice"
-          value={formData.deliveryPrice}
-          onChange={handleChange}
-          placeholder="Delivery Price"
-          className="p-2 border w-full text-black"
-        />
-      </label>
-
-      <label className="block mb-2 w-full">
-        Pickup Price:
-        <input
-          type="text"
-          name="pickupPrice"
-          value={formData.pickupPrice}
-          onChange={handleChange}
-          placeholder="Pickup Price"
-          className="p-2 border w-full text-black"
-        />
-      </label>
-
+        <label className="block mb-2 w-full">
+          Pickup Price:
+          <input
+            type="text"
+            name="pickupPrice"
+            value={formData.pickupPrice}
+            onChange={handleChange}
+            placeholder="Pickup Price"
+            className="p-2 border w-full text-black"
+          />
+        </label>
+      </div>
       <label className="block mb-2 w-full">
         Is Active:
         <input

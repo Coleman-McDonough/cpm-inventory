@@ -41,28 +41,30 @@ const PropertyForm = ({
           className="p-2 border w-full text-black"
         />
       </label>
-      <label className="block mb-2 w-full">
-        Square Footage:
-        <input
-          type="text"
-          name="squareFootage"
-          value={formData.squareFootage}
-          onChange={handleChange}
-          placeholder="Square Footage"
-          className="p-2 border w-full text-black"
-        />
-      </label>
-      <label className="block mb-2 w-full">
-        Price:
-        <input
-          type="text"
-          name="price"
-          value={formData.price}
-          onChange={handleChange}
-          placeholder="Price"
-          className="p-2 border w-full text-black"
-        />
-      </label>
+      <div className="flex flex-row">
+        <label className="block mb-2 w-full mr-2">
+          Square Footage:
+          <input
+            type="text"
+            name="squareFootage"
+            value={formData.squareFootage}
+            onChange={handleChange}
+            placeholder="Square Footage"
+            className="p-2 border w-full text-black"
+          />
+        </label>
+        <label className="block mb-2 w-full">
+          Price:
+          <input
+            type="text"
+            name="price"
+            value={formData.price}
+            onChange={handleChange}
+            placeholder="Price"
+            className="p-2 border w-full text-black"
+          />
+        </label>
+      </div>
       <label className="block mb-2 w-full">
         Description:
         <textarea
@@ -84,26 +86,28 @@ const PropertyForm = ({
           className="p-2 border w-full text-black"
         />
       </label>
-      <label className="block mb-2 w-full">
-        Is Rental:
-        <input
-          type="checkbox"
-          name="isRental"
-          checked={formData.isRental}
-          onChange={handleCheckboxChange}
-          className="ml-2"
-        />
-      </label>
-      <label className="block mb-2 w-full">
-        Is Active:
-        <input
-          type="checkbox"
-          name="isActive"
-          checked={formData.isActive}
-          onChange={handleCheckboxChange}
-          className="ml-2"
-        />
-      </label>
+      <div className="flex flex-row">
+        <label className="block mb-2 w-32  underline">
+          Is Active:
+          <input
+            type="checkbox"
+            name="isActive"
+            checked={formData.isActive}
+            onChange={handleCheckboxChange}
+            className="ml-2"
+          />
+        </label>
+        <label className="block mb-2 w-32 underline">
+          Is Rental:
+          <input
+            type="checkbox"
+            name="isRental"
+            checked={formData.isRental}
+            onChange={handleCheckboxChange}
+            className="ml-2"
+          />
+        </label>
+      </div>
       <label className="block mb-2 w-full">
         Listing Websites:
         <input

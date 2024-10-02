@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { connectToMongodbProperties } from "../../lib/mongodb"
+import {
+  connectToMongodbEquipment,
+  connectToMongodbMaterials,
+  connectToMongodbProperties,
+} from "../../lib/mongodb"
 import { PropertyEntry } from "@/app/models/EntrySchemas"
 import { ObjectId } from "mongodb"
+import { generateUniqueUrlEnd } from "@/app/lib/helpers"
 
 // Define allowed origins
 const allowedOrigins = ["http://localhost:3000"]
@@ -108,7 +113,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       isActive,
     } = requestBody
 
-    const { db } = await connectToMongodbProperties()
+    const { db: db } = await connectToMongodbProperties()
+    const { db: dbEquipment } = await connectToMongodbEquipment()
+    const { db: dbMaterials } = await connectToMongodbMaterials()
+
+    const uniqueUrlEnd = await generateUniqueUrlEnd(
+      db,
+      dbEquipment,
+      dbMaterials,
+      urlEnd
+    )
 
     // Insert the new property
     const newProperty: PropertyEntry = {
@@ -120,7 +134,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       imageUrl,
       isRental,
       listingWebsites,
-      urlEnd,
+      urlEnd: uniqueUrlEnd,
       isActive,
     }
 
@@ -165,6 +179,15 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     }
 
     const { db } = await connectToMongodbProperties()
+    const { db: dbEquipment } = await connectToMongodbEquipment()
+    const { db: dbMaterials } = await connectToMongodbMaterials()
+
+    const uniqueUrlEnd = await generateUniqueUrlEnd(
+      db,
+      dbEquipment,
+      dbMaterials,
+      updateData.urlEnd
+    )
 
     // If _id is a string, cast it to ObjectId
     const objectId = typeof _id === "string" ? new ObjectId(_id) : _id
@@ -181,7 +204,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         imageUrl: updateData.imageUrl || "",
         isRental: updateData.isRental || false,
         listingWebsites: updateData.listingWebsites || "",
-        urlEnd: updateData.urlEnd || "",
+        urlEnd: uniqueUrlEnd || "",
         isActive: updateData.isActive || false,
       },
     }
