@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { connectToMongodbEquipment } from "../../lib/mongodb" // Update the MongoDB connection to handle equipment
+import {
+  connectToMongodbEquipment,
+  connectToMongodbMaterials,
+  connectToMongodbProperties,
+} from "../../lib/mongodb" // Update the MongoDB connection to handle equipment
 import { EquipmentEntry } from "@/app/models/EntrySchemas"
 import { ObjectId } from "mongodb"
+import { generateUniqueUrlEnd } from "@/app/lib/helpers"
 
 // Define allowed origins
 const allowedOrigins = ["http://localhost:3000"]
@@ -106,6 +111,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } = requestBody
 
     const { db } = await connectToMongodbEquipment() // Connect to equipment collection
+    const { db: dbMaterials } = await connectToMongodbMaterials()
+    const { db: dbProperties } = await connectToMongodbProperties()
+
+    const uniqueUrlEnd = await generateUniqueUrlEnd(
+      dbProperties,
+      db,
+      dbMaterials,
+      urlEnd
+    )
 
     // Insert the new equipment
     const newEquipment: EquipmentEntry = {
@@ -113,7 +127,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       description,
       price,
       listingWebsites,
-      urlEnd,
+      urlEnd: uniqueUrlEnd, // Use uniqueUrlEnd instead of urlEnd
       isActive,
       imageUrl, // Handle imageUrl
     }
@@ -159,6 +173,15 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     }
 
     const { db } = await connectToMongodbEquipment() // Connect to equipment collection
+    const { db: dbMaterials } = await connectToMongodbMaterials()
+    const { db: dbProperties } = await connectToMongodbProperties()
+
+    const uniqueUrlEnd = await generateUniqueUrlEnd(
+      dbProperties,
+      db,
+      dbMaterials,
+      updateData.urlEnd
+    )
 
     // If _id is a string, cast it to ObjectId
     const objectId = typeof _id === "string" ? new ObjectId(_id) : _id
@@ -171,7 +194,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         description: updateData.description || "",
         price: updateData.price || 0,
         listingWebsites: updateData.listingWebsites || "",
-        urlEnd: updateData.urlEnd || "",
+        urlEnd: uniqueUrlEnd || "",
         isActive: updateData.isActive || false,
         imageUrl: updateData.imageUrl || "", // Handle imageUrl update
       },

@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { connectToMongodbMaterials } from "../../lib/mongodb" // Assuming a separate connection for materials, similar to properties
+import {
+  connectToMongodbEquipment,
+  connectToMongodbMaterials,
+  connectToMongodbProperties,
+} from "../../lib/mongodb" // Assuming a separate connection for materials, similar to properties
 import { MaterialsEntry, UpdateMaterialsEntry } from "@/app/models/EntrySchemas"
 import { ObjectId } from "mongodb"
+import { generateUniqueUrlEnd } from "@/app/lib/helpers"
 
 // Define allowed origins
 const allowedOrigins = ["http://localhost:3000"]
@@ -107,6 +112,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } = requestBody
 
     const { db } = await connectToMongodbMaterials()
+    const { db: dbProperties } = await connectToMongodbProperties()
+    const { db: dbEquipment } = await connectToMongodbEquipment()
+
+    const uniqueUrlEnd = await generateUniqueUrlEnd(
+      dbProperties,
+      dbEquipment,
+      db,
+      urlEnd
+    )
 
     // Insert the new material
     const newMaterial: MaterialsEntry = {
@@ -116,7 +130,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       deliveryPrice,
       pickupPrice,
       listingWebsites,
-      urlEnd,
+      urlEnd: uniqueUrlEnd,
       isActive,
     }
 
@@ -161,6 +175,15 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     }
 
     const { db } = await connectToMongodbMaterials()
+    const { db: dbProperties } = await connectToMongodbProperties()
+    const { db: dbEquipment } = await connectToMongodbEquipment()
+
+    const uniqueUrlEnd = await generateUniqueUrlEnd(
+      dbProperties,
+      dbEquipment,
+      db,
+      updateData.urlEnd
+    )
 
     // If _id is a string, cast it to ObjectId
     const objectId = new ObjectId(_id)
@@ -174,7 +197,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         deliveryPrice: updateData.deliveryPrice || "",
         pickupPrice: updateData.pickupPrice || "",
         listingWebsites: updateData.listingWebsites || "",
-        urlEnd: updateData.urlEnd || "",
+        urlEnd: uniqueUrlEnd || "",
         isActive: updateData.isActive || false,
       },
     }
