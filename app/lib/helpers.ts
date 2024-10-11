@@ -47,3 +47,39 @@ export function formatStringAsNumber(input: string): string {
     return input
   }
 }
+
+// Update property, equipment, or material
+export async function updateItem(
+  item: PropertyEntry | EquipmentEntry | MaterialsEntry,
+  type: "property" | "equipment" | "materials"
+) {
+  const response = await fetch(`/api/${type}?_id=${item._id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(item),
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to update item")
+  }
+
+  return response.json()
+}
+
+// Delete property, equipment, or material
+export async function deleteItem(
+  id: string,
+  type: "property" | "equipment" | "materials"
+) {
+  const response = await fetch(`/api/${type}?_id=${id}`, {
+    method: "DELETE",
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to delete item")
+  }
+
+  return response.json()
+}

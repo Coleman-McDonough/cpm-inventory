@@ -5,6 +5,7 @@ import {
   MaterialsEntry,
 } from "../models/EntrySchemas"
 import { formatStringAsNumber } from "../lib/helpers"
+import ClientSideComponent from "../components/AddAndEditButtons" // New client-side component for session handling
 
 export const revalidate = 0 // Disable ISR and ensure the page is always fetched dynamically
 
@@ -30,7 +31,6 @@ async function fetchData(
 
   const data = await response.json()
 
-  console.log(data)
   return data || null
 }
 
@@ -65,10 +65,11 @@ export default async function PropertyOrEquipmentOrMaterialPage({
   return (
     <div className="container mx-auto p-4 align-middle bg-white text-black">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">{entry.name}</h1>
         <a href={`/`} className="p-2 bg-green-500 text-white rounded">
           Go Back
         </a>
+        <h1 className="text-2xl font-bold">{entry.name}</h1>
+        <ClientSideComponent entry={entry} type={type} />
       </div>
       <img
         src={entry.imageUrl}
