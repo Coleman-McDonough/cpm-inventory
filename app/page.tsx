@@ -16,10 +16,10 @@ const ACCESS_EMAILS = [
 ]
 
 function MainPage() {
-  const [isActiveFilter, setIsActiveFilter] = useState(true)
-  const [showPropertyList, setShowPropertyList] = useState(true)
-  const [showEquipmentList, setShowEquipmentList] = useState(true)
-  const [showMaterialsList, setShowMaterialsList] = useState(true)
+  const [isActiveFilter, setIsActiveFilter] = useState(false)
+  const [showPropertyList, setShowPropertyList] = useState(false)
+  const [showEquipmentList, setShowEquipmentList] = useState(false)
+  const [showMaterialsList, setShowMaterialsList] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const { data: session } = useSession()
 
@@ -56,6 +56,10 @@ function MainPage() {
   const handleAddClick = () => {
     setIsAddModalOpen(true)
   }
+
+  // Determine if all checkboxes are unchecked
+  const allUnchecked =
+    !showPropertyList && !showEquipmentList && !showMaterialsList
 
   return (
     <div className="flex flex-col items-center justify-center bg-white text-black">
@@ -138,9 +142,15 @@ function MainPage() {
         </div>
 
         {/* Conditionally render the lists based on the checkboxes */}
-        {showPropertyList && <PropertyList isActiveFilter={isActiveFilter} />}
-        {showEquipmentList && <EquipmentList isActiveFilter={isActiveFilter} />}
-        {showMaterialsList && <MaterialsList isActiveFilter={isActiveFilter} />}
+        {(allUnchecked || showPropertyList) && (
+          <PropertyList isActiveFilter={isActiveFilter} />
+        )}
+        {(allUnchecked || showEquipmentList) && (
+          <EquipmentList isActiveFilter={isActiveFilter} />
+        )}
+        {(allUnchecked || showMaterialsList) && (
+          <MaterialsList isActiveFilter={isActiveFilter} />
+        )}
 
         {/* Add Entry Modal */}
         {hasAccess && (
