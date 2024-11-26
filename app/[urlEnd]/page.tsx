@@ -86,7 +86,7 @@ export default async function PropertyOrEquipmentOrMaterialPage({
           <p className="border-2 p-1">
             <strong>Price:</strong> $
             {`${formatStringAsNumber((entry as PropertyEntry).price)}${
-              (entry as PropertyEntry).isRental ? " /ft" : ""
+              (entry as PropertyEntry).isRental ? " /month" : ""
             }`}
           </p>
           <p className="border-2 p-1">
