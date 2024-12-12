@@ -3,6 +3,7 @@ import {
   EquipmentEntry,
   MaterialsEntry,
   PropertyEntry,
+  HaulingEntry,
 } from "../models/EntrySchemas"
 
 // Helper function to generate a unique urlEnd by adding a suffix if needed
@@ -10,6 +11,7 @@ export async function generateUniqueUrlEnd(
   pdb: Db,
   edb: Db,
   mdb: Db,
+  hdb: Db,
   baseUrlEnd: string
 ): Promise<string> {
   let uniqueUrlEnd = baseUrlEnd
@@ -25,6 +27,9 @@ export async function generateUniqueUrlEnd(
       .findOne({ urlEnd: uniqueUrlEnd })) ||
     (await mdb
       .collection<MaterialsEntry>("materials")
+      .findOne({ urlEnd: uniqueUrlEnd })) ||
+    (await hdb
+      .collection<HaulingEntry>("hauling")
       .findOne({ urlEnd: uniqueUrlEnd }))
   ) {
     uniqueUrlEnd = `${baseUrlEnd}-${counter}`
@@ -48,10 +53,10 @@ export function formatStringAsNumber(input: string): string {
   }
 }
 
-// Update property, equipment, or material
+// Update property, equipment, material, or hauling
 export async function updateItem(
   item: PropertyEntry | EquipmentEntry | MaterialsEntry,
-  type: "property" | "equipment" | "materials"
+  type: "property" | "equipment" | "materials" | "hauling"
 ) {
   const response = await fetch(`/api/${type}?_id=${item._id}`, {
     method: "PUT",
@@ -68,10 +73,10 @@ export async function updateItem(
   return response.json()
 }
 
-// Delete property, equipment, or material
+// Delete property, equipment, material or hauling
 export async function deleteItem(
   id: string,
-  type: "property" | "equipment" | "materials"
+  type: "property" | "equipment" | "materials" | "hauling"
 ) {
   const response = await fetch(`/api/${type}?_id=${id}`, {
     method: "DELETE",

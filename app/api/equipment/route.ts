@@ -3,6 +3,7 @@ import {
   connectToMongodbEquipment,
   connectToMongodbMaterials,
   connectToMongodbProperties,
+  connectToMongodbHauling,
 } from "../../lib/mongodb" // Update the MongoDB connection to handle equipment
 import { EquipmentEntry } from "@/app/models/EntrySchemas"
 import { ObjectId } from "mongodb"
@@ -113,11 +114,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { db } = await connectToMongodbEquipment() // Connect to equipment collection
     const { db: dbMaterials } = await connectToMongodbMaterials()
     const { db: dbProperties } = await connectToMongodbProperties()
+    const { db: dbHauling } = await connectToMongodbHauling()
 
     const uniqueUrlEnd = await generateUniqueUrlEnd(
       dbProperties,
       db,
       dbMaterials,
+      dbHauling,
       urlEnd
     )
 
@@ -175,6 +178,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const { db } = await connectToMongodbEquipment() // Connect to equipment collection
     const { db: dbMaterials } = await connectToMongodbMaterials()
     const { db: dbProperties } = await connectToMongodbProperties()
+    const { db: dbHauling } = await connectToMongodbHauling()
 
     const objectId = typeof _id === "string" ? new ObjectId(_id) : _id
 
@@ -193,6 +197,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         dbProperties,
         db,
         dbMaterials,
+        dbHauling,
         updateData.urlEnd
       )
     }

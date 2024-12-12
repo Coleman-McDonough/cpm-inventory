@@ -4,10 +4,12 @@ import { useState } from "react"
 import PropertyForm from "../components/PropertyForm"
 import EquipmentForm from "../components/EquipmentForm"
 import MaterialsForm from "../components/MaterialsForm"
+import HaulingForm from "./HaulingForm"
 import {
   PropertyEntry,
   EquipmentEntry,
   MaterialsEntry,
+  HaulingEntry,
 } from "../models/EntrySchemas"
 
 interface ModalProps {
@@ -25,7 +27,7 @@ const AddEntryModal: React.FC<ModalProps> = ({
   //const hasAccess = true // Replace this with your actual condition for access
 
   const [formData, setFormData] = useState<
-    PropertyEntry | EquipmentEntry | MaterialsEntry
+    PropertyEntry | EquipmentEntry | MaterialsEntry | HaulingEntry
   >({
     name: "",
     address: "",
@@ -120,6 +122,15 @@ const AddEntryModal: React.FC<ModalProps> = ({
           />
         )
 
+      case "hauling":
+        return (
+          <HaulingForm
+            formData={formData as HaulingEntry}
+            handleChange={handleChange}
+            handleCheckboxChange={handleCheckboxChange}
+          />
+        )
+
       default:
         return null
     }
@@ -160,6 +171,7 @@ const AddEntryModal: React.FC<ModalProps> = ({
                 <option value="property">Property</option>
                 <option value="equipment">Equipment</option>
                 <option value="materials">Materials</option>
+                <option value="hauling">Hauling</option>
               </select>
             </div>
 

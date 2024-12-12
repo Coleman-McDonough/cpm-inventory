@@ -4,8 +4,8 @@ import {
   connectToMongodbMaterials,
   connectToMongodbProperties,
   connectToMongodbHauling,
-} from "../../lib/mongodb" // Assuming a separate connection for materials, similar to properties
-import { MaterialsEntry, UpdateMaterialsEntry } from "@/app/models/EntrySchemas"
+} from "../../lib/mongodb" // Update the MongoDB connection to handle hauling
+import { HaulingEntry } from "@/app/models/EntrySchemas"
 import { ObjectId } from "mongodb"
 import { generateUniqueUrlEnd } from "@/app/lib/helpers"
 
@@ -36,51 +36,51 @@ export async function OPTIONS(request: NextRequest): Promise<NextResponse> {
   })
 }
 
-// GET: Retrieve all materials entries or a specific one by _id or urlEnd
+// GET: Retrieve all hauling entries or a specific one by _id or urlEnd
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("_id")
-    const urlEnd = searchParams.get("urlEnd")
+    const urlEnd = searchParams.get("urlEnd") // Capture the `urlEnd` parameter
 
-    const { db } = await connectToMongodbMaterials()
+    const { db } = await connectToMongodbHauling() // Connect to hauling collection
 
     if (id) {
-      // Fetch a single material by _id
+      // Fetch a single hauling item by _id
       const objectId = new ObjectId(id)
-      const material = await db
-        .collection<MaterialsEntry>("materials")
+      const hauling = await db
+        .collection<HaulingEntry>("hauling")
         .findOne({ _id: objectId })
 
-      if (material) {
-        return NextResponse.json(material)
+      if (hauling) {
+        return NextResponse.json(hauling)
       } else {
         return NextResponse.json(
-          { message: "Material not found" },
+          { message: "Hauling entry not found" },
           { status: 404 }
         )
       }
     } else if (urlEnd) {
-      // Fetch a single material by `urlEnd`
-      const material = await db
-        .collection<MaterialsEntry>("materials")
+      // Fetch a single hauling item by `urlEnd`
+      const hauling = await db
+        .collection<HaulingEntry>("hauling")
         .findOne({ urlEnd })
 
-      if (material) {
-        return NextResponse.json(material)
+      if (hauling) {
+        return NextResponse.json(hauling)
       } else {
         return NextResponse.json(
-          { message: "Material not found" },
+          { message: "Hauling entry not found" },
           { status: 404 }
         )
       }
     } else {
-      // Fetch all materials if no specific id or urlEnd is provided
-      const materials = await db
-        .collection<MaterialsEntry>("materials")
+      // Fetch all hauling if no specific id or urlEnd is provided
+      const haulingList = await db
+        .collection<HaulingEntry>("hauling")
         .find({})
         .toArray()
-      return NextResponse.json(materials)
+      return NextResponse.json(haulingList)
     }
   } catch (error) {
     if (error instanceof Error) {
@@ -97,58 +97,55 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-// POST: Create a new material
+// POST: Create a new hauling entry
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const requestBody = await request.json()
     const {
       name,
       description,
-      imageUrl,
-      deliveryPrice,
-      pickupPrice,
+      price,
       listingWebsites,
       urlEnd,
       isActive,
+      imageUrl, // Added imageUrl field
     } = requestBody
 
-    const { db } = await connectToMongodbMaterials()
+    const { db } = await connectToMongodbHauling() // Connect to haulig collection
+    const { db: dbMaterials } = await connectToMongodbMaterials()
     const { db: dbProperties } = await connectToMongodbProperties()
     const { db: dbEquipment } = await connectToMongodbEquipment()
-    const { db: dbHauling } = await connectToMongodbHauling()
 
     const uniqueUrlEnd = await generateUniqueUrlEnd(
       dbProperties,
       dbEquipment,
+      dbMaterials,
       db,
-      dbHauling,
       urlEnd
     )
 
-    // Insert the new material
-    const newMaterial: MaterialsEntry = {
+    // Insert the new hauling entry
+    const newHauling: HaulingEntry = {
       name,
       description,
-      imageUrl,
-      deliveryPrice,
-      pickupPrice,
-      listingWebsites,
-      urlEnd: uniqueUrlEnd,
+      price,
+      urlEnd: uniqueUrlEnd, // Use uniqueUrlEnd instead of urlEnd
       isActive,
+      imageUrl, // Handle imageUrl
     }
 
     const result = await db
-      .collection<MaterialsEntry>("materials")
-      .insertOne(newMaterial)
+      .collection<HaulingEntry>("hauling")
+      .insertOne(newHauling)
 
     if (result.acknowledged) {
       return NextResponse.json(
-        { message: "Material added successfully", _id: result.insertedId },
+        { message: "hauling entry added successfully", _id: result.insertedId },
         { status: 201 }
       )
     } else {
       return NextResponse.json(
-        { message: "Failed to add material" },
+        { message: "Failed to add hauling entry" },
         { status: 500 }
       )
     }
@@ -156,7 +153,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (error instanceof Error) {
       console.error("Error handling POST request:", error.message)
       return NextResponse.json(
-        { message: `Failed to create material: ${error.message}` },
+        { message: `Failed to create hauling entry: ${error.message}` },
         { status: 500 }
       )
     }
@@ -167,25 +164,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-// PUT: Update a material by _id
+// PUT: Update an Hauling entry by _id
 export async function PUT(request: NextRequest): Promise<NextResponse> {
   try {
     const requestBody = await request.json()
     const { _id, ...updateData } = requestBody
 
     if (!_id) {
-      return NextResponse.json({ message: "_id is required" }, { status: 400 })
+      return NextResponse.json({ message: "_id is required" }, { status: 400 }) // Use 400 for bad request
     }
 
-    const { db } = await connectToMongodbMaterials()
+    const { db } = await connectToMongodbHauling() // Connect to Hauling collection
+    const { db: dbMaterials } = await connectToMongodbMaterials()
     const { db: dbProperties } = await connectToMongodbProperties()
     const { db: dbEquipment } = await connectToMongodbEquipment()
-    const { db: dbHauling } = await connectToMongodbHauling()
 
     const objectId = typeof _id === "string" ? new ObjectId(_id) : _id
 
     const existingProperty = await db
-      .collection<MaterialsEntry>("materials")
+      .collection<HaulingEntry>("hauling")
       .findOne({ _id: objectId })
 
     let uniqueUrlEnd = updateData.urlEnd
@@ -193,54 +190,54 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (
       existingProperty &&
       updateData.urlEnd &&
-      updateData.urlEnd !== existingProperty.urlEnd
+      existingProperty.urlEnd !== updateData.urlEnd
     ) {
       uniqueUrlEnd = await generateUniqueUrlEnd(
         dbProperties,
         dbEquipment,
+        dbMaterials,
         db,
-        dbHauling,
         updateData.urlEnd
       )
     }
 
+    // Manually set default values for fields that should have them
     const updateObject = {
       $set: {
-        ...updateData,
+        ...updateData, // Spread updateData to include all fields to be updated
         name: updateData.name || "",
         description: updateData.description || "",
-        imageUrl: updateData.imageUrl || "",
-        deliveryPrice: updateData.deliveryPrice || "",
-        pickupPrice: updateData.pickupPrice || "",
+        price: updateData.price || 0,
         listingWebsites: updateData.listingWebsites || "",
         urlEnd: uniqueUrlEnd || "",
         isActive: updateData.isActive || false,
+        imageUrl: updateData.imageUrl || "", // Handle imageUrl update
       },
     }
 
-    // Update the material using _id
+    // Update the hauling using _id
     const result = await db
-      .collection<MaterialsEntry>("materials")
+      .collection<HaulingEntry>("hauling")
       .updateOne({ _id: objectId }, updateObject, { upsert: true })
 
     if (result.matchedCount === 0 && result.upsertedCount > 0) {
       return NextResponse.json(
-        { message: "New material added", _id: objectId },
+        { message: "New hauling added", _id: objectId },
         { status: 201 }
-      )
+      ) // Use 201 for Created
     } else if (result.modifiedCount > 0) {
       return NextResponse.json(
-        { message: "Material updated successfully", _id: objectId },
+        { message: "Hauling entry updated successfully", _id: objectId },
         { status: 200 }
-      )
+      ) // Use 200 for OK
     } else {
-      return NextResponse.json({ message: "No changes made" }, { status: 200 })
+      return NextResponse.json({ message: "No changes made" }, { status: 200 }) // Use 200 OK for consistency
     }
   } catch (error) {
     if (error instanceof Error) {
       console.error("Error handling PUT request:", error.message)
       return NextResponse.json(
-        { message: `Failed to update material: ${error.message}` },
+        { message: `Failed to update hauling: ${error.message}` },
         { status: 500 }
       )
     }
@@ -251,34 +248,34 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-// DELETE: Delete a material by _id
+// DELETE: Delete an hauling entry by _id
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("_id")
 
     if (!id) {
-      return NextResponse.json({ message: "_id is required" }, { status: 400 })
+      return NextResponse.json({ message: "_id is required" }, { status: 400 }) // Use 400 for bad request
     }
 
-    const { db } = await connectToMongodbMaterials()
+    const { db } = await connectToMongodbHauling() // Connect to hauling collection
 
     // Cast _id to ObjectId
     const objectId = new ObjectId(id)
 
-    // Delete the material using _id
+    // Delete the hauling using _id
     const result = await db
-      .collection<MaterialsEntry>("materials")
+      .collection<HaulingEntry>("hauling")
       .deleteOne({ _id: objectId })
 
     if (result.deletedCount === 1) {
       return NextResponse.json(
-        { message: "Material deleted successfully" },
+        { message: "Hauling entry deleted successfully" },
         { status: 200 }
       )
     } else {
       return NextResponse.json(
-        { message: "Material not found" },
+        { message: "Hauling entry not found" },
         { status: 404 }
       )
     }
@@ -286,7 +283,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     if (error instanceof Error) {
       console.error("Error handling DELETE request:", error.message)
       return NextResponse.json(
-        { message: `Failed to delete material: ${error.message}` },
+        { message: `Failed to delete hauling: ${error.message}` },
         { status: 500 }
       )
     }

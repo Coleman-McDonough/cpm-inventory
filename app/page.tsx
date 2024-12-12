@@ -5,6 +5,7 @@ import { signIn, signOut, useSession } from "next-auth/react"
 import PropertyList from "./components/PropertyList"
 import EquipmentList from "./components/EquipmentList"
 import MaterialsList from "./components/MaterialsList"
+import HaulingList from "./components/HaulingList"
 import AddEntryModal from "./components/AddEntryModal"
 
 // Define your access control emails
@@ -20,6 +21,7 @@ function MainPage() {
   const [showPropertyList, setShowPropertyList] = useState(false)
   const [showEquipmentList, setShowEquipmentList] = useState(false)
   const [showMaterialsList, setShowMaterialsList] = useState(false)
+  const [showHaulingList, setShowHaulingList] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const { data: session } = useSession()
 
@@ -52,6 +54,12 @@ function MainPage() {
     setShowMaterialsList(e.target.checked)
   }
 
+  const handleShowHaulingListChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setShowHaulingList(e.target.checked)
+  }
+
   // Handle the "Add" button click
   const handleAddClick = () => {
     setIsAddModalOpen(true)
@@ -59,7 +67,10 @@ function MainPage() {
 
   // Determine if all checkboxes are unchecked
   const allUnchecked =
-    !showPropertyList && !showEquipmentList && !showMaterialsList
+    !showPropertyList &&
+    !showEquipmentList &&
+    !showMaterialsList &&
+    !showHaulingList
 
   return (
     <div className="flex flex-col items-center justify-center bg-white text-black">
@@ -130,7 +141,7 @@ function MainPage() {
             Equipment
           </label>
 
-          <label>
+          <label className="mr-4">
             <input
               type="checkbox"
               checked={showMaterialsList}
@@ -138,6 +149,15 @@ function MainPage() {
               className="mr-2"
             />
             Materials
+          </label>
+          <label className="mr-4">
+            <input
+              type="checkbox"
+              checked={showHaulingList}
+              onChange={handleShowHaulingListChange}
+              className="mr-2"
+            />
+            Hauling
           </label>
         </div>
 
@@ -150,6 +170,9 @@ function MainPage() {
         )}
         {(allUnchecked || showMaterialsList) && (
           <MaterialsList isActiveFilter={isActiveFilter} />
+        )}
+        {(allUnchecked || showHaulingList) && (
+          <HaulingList isActiveFilter={isActiveFilter} />
         )}
 
         {/* Add Entry Modal */}

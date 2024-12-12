@@ -3,6 +3,7 @@ import {
   connectToMongodbEquipment,
   connectToMongodbMaterials,
   connectToMongodbProperties,
+  connectToMongodbHauling,
 } from "../../lib/mongodb"
 import { PropertyEntry } from "@/app/models/EntrySchemas"
 import { ObjectId } from "mongodb"
@@ -116,11 +117,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { db: db } = await connectToMongodbProperties()
     const { db: dbEquipment } = await connectToMongodbEquipment()
     const { db: dbMaterials } = await connectToMongodbMaterials()
+    const { db: dbHauling } = await connectToMongodbHauling()
 
     const uniqueUrlEnd = await generateUniqueUrlEnd(
       db,
       dbEquipment,
       dbMaterials,
+      dbHauling,
       urlEnd
     )
 
@@ -181,6 +184,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const { db } = await connectToMongodbProperties()
     const { db: dbEquipment } = await connectToMongodbEquipment()
     const { db: dbMaterials } = await connectToMongodbMaterials()
+    const { db: dbHauling } = await connectToMongodbHauling()
 
     // If _id is a string, cast it to ObjectId
     const objectId = typeof _id === "string" ? new ObjectId(_id) : _id
@@ -202,6 +206,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         db,
         dbEquipment,
         dbMaterials,
+        dbHauling,
         updateData.urlEnd
       )
     }

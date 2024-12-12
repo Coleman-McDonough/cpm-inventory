@@ -78,3 +78,24 @@ export interface UpdateMaterialsEntry {
   urlEnd?: string
   isActive?: boolean
 }
+
+export interface HaulingEntry {
+  _id?: string | ObjectId
+  name: string
+  price: string
+  description: string
+  imageUrl: string
+  urlEnd: string
+  isActive: boolean
+
+  // Define other fields as necessary
+}
+
+export interface UpdateHaulingEntry {
+  name?: string
+  price?: string
+  description?: string
+  imageUrl?: string
+  urlEnd?: string
+  isActive?: boolean
+}

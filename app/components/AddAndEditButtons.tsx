@@ -5,15 +5,17 @@ import {
   PropertyEntry,
   EquipmentEntry,
   MaterialsEntry,
+  HaulingEntry,
 } from "../models/EntrySchemas"
 import PropertyForm from "../components/PropertyForm"
 import EquipmentForm from "../components/EquipmentForm"
 import MaterialsForm from "../components/MaterialsForm"
+import HaulingForm from "./HaulingForm"
 
 // Fetch and delete item utility functions
 async function deleteItem(
   id: string,
-  type: "property" | "equipment" | "materials"
+  type: "property" | "equipment" | "materials" | "hauling"
 ) {
   const response = await fetch(`/api/${type}?_id=${id}`, {
     method: "DELETE",
@@ -27,8 +29,8 @@ async function deleteItem(
 }
 
 async function updateItem(
-  item: PropertyEntry | EquipmentEntry | MaterialsEntry,
-  type: "property" | "equipment" | "materials"
+  item: PropertyEntry | EquipmentEntry | MaterialsEntry | HaulingEntry,
+  type: "property" | "equipment" | "materials" | "hauling"
 ) {
   const response = await fetch(`/api/${type}?_id=${item._id}`, {
     method: "PUT",
@@ -46,8 +48,8 @@ async function updateItem(
 }
 
 interface ClientSideComponentProps {
-  entry: PropertyEntry | EquipmentEntry | MaterialsEntry
-  type: "property" | "equipment" | "materials"
+  entry: PropertyEntry | EquipmentEntry | MaterialsEntry | HaulingEntry
+  type: "property" | "equipment" | "materials" | "hauling"
 }
 
 export default function ClientSideComponent({
@@ -55,7 +57,7 @@ export default function ClientSideComponent({
   type,
 }: ClientSideComponentProps) {
   const [selectedItem, setSelectedItem] = useState<
-    PropertyEntry | EquipmentEntry | MaterialsEntry | null
+    PropertyEntry | EquipmentEntry | MaterialsEntry | HaulingEntry | null
   >(entry)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { data: session } = useSession()
@@ -165,6 +167,14 @@ export default function ClientSideComponent({
             {type === "materials" && (
               <MaterialsForm
                 formData={selectedItem as MaterialsEntry}
+                handleChange={handleChange}
+                handleCheckboxChange={handleCheckboxChange}
+              />
+            )}
+
+            {type === "hauling" && (
+              <HaulingForm
+                formData={selectedItem as HaulingEntry}
                 handleChange={handleChange}
                 handleCheckboxChange={handleCheckboxChange}
               />

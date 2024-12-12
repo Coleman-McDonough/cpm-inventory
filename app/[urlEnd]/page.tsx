@@ -3,6 +3,7 @@ import {
   PropertyEntry,
   EquipmentEntry,
   MaterialsEntry,
+  HaulingEntry,
 } from "../models/EntrySchemas"
 import { formatStringAsNumber } from "../lib/helpers"
 import ClientSideComponent from "../components/AddAndEditButtons" // New client-side component for session handling
@@ -19,8 +20,10 @@ interface Props {
 async function fetchData(
   urlEnd: string,
   origin: string,
-  type: "property" | "equipment" | "materials"
-): Promise<PropertyEntry | EquipmentEntry | MaterialsEntry | null> {
+  type: "property" | "equipment" | "materials" | "hauling"
+): Promise<
+  PropertyEntry | EquipmentEntry | MaterialsEntry | HaulingEntry | null
+> {
   const response = await fetch(`${origin}/api/${type}?urlEnd=${urlEnd}`, {
     cache: "no-store", // Ensure fresh data on each request
   })
@@ -34,7 +37,7 @@ async function fetchData(
   return data || null
 }
 
-export default async function PropertyOrEquipmentOrMaterialPage({
+export default async function PropertyOrEquipmentOrMaterialOrHaulingPage({
   params,
 }: {
   params: { urlEnd: string }
@@ -44,9 +47,9 @@ export default async function PropertyOrEquipmentOrMaterialPage({
     process.env.VERCEL_URL ||
     "http://localhost:3000" // Fallback to localhost in development
 
-  // Try fetching from materials first, then equipment, then properties
+  // Try fetching from materials first, then equipment, then properties, then hauling
   let entry = await fetchData(params.urlEnd, origin, "materials")
-  let type: "property" | "equipment" | "materials" = "materials"
+  let type: "property" | "equipment" | "materials" | "hauling" = "materials"
 
   if (!entry) {
     entry = await fetchData(params.urlEnd, origin, "equipment")
@@ -56,6 +59,11 @@ export default async function PropertyOrEquipmentOrMaterialPage({
   if (!entry) {
     entry = await fetchData(params.urlEnd, origin, "property")
     type = "property"
+  }
+
+  if (!entry) {
+    entry = await fetchData(params.urlEnd, origin, "hauling")
+    type = "hauling"
   }
 
   if (!entry) {
@@ -108,6 +116,14 @@ export default async function PropertyOrEquipmentOrMaterialPage({
           </p>
         </>
       )}
+      {type === "hauling" && (
+        <>
+          <p className="border-2 p-1">
+            <strong>Price:</strong> $
+            {formatStringAsNumber((entry as HaulingEntry).price)}\hour
+          </p>
+        </>
+      )}
 
       {type === "materials" && (
         <>
@@ -129,9 +145,12 @@ export default async function PropertyOrEquipmentOrMaterialPage({
       <p className="border-2 p-1">
         <strong>Active:</strong> {entry.isActive ? "Yes" : "No"}
       </p>
-      <p className="border-2 p-1">
-        <strong>Listing Websites:</strong> {entry.listingWebsites}
-      </p>
+      {type !== "hauling" && (
+        <p className="border-2 p-1">
+          <strong>Listing Websites:</strong>{" "}
+          {"listingWebsites" in entry ? entry.listingWebsites : "N/A"}
+        </p>
+      )}
     </div>
   )
 }

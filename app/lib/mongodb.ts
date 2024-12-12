@@ -51,3 +51,17 @@ export async function connectToMongodbMaterials(): Promise<DatabaseConnection> {
   const db = client.db("materials")
   return { db, client }
 }
+export async function connectToMongodbHauling(): Promise<DatabaseConnection> {
+  try {
+    // Attempt to connect to the database
+    await client.connect()
+    console.log("Connected to MongoDB")
+  } catch (error) {
+    // If there's an error, log it and throw it to be handled by the caller
+    console.error("Error connecting to MongoDB:", error)
+    throw error
+  }
+
+  const db = client.db("hauling")
+  return { db, client }
+}
