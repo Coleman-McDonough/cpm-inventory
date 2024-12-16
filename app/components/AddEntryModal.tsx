@@ -4,12 +4,13 @@ import { useState } from "react"
 import PropertyForm from "../components/PropertyForm"
 import EquipmentForm from "../components/EquipmentForm"
 import MaterialsForm from "../components/MaterialsForm"
-import HaulingForm from "./HaulingForm"
+import HaulingForm from "../components/HaulingForm"
 import {
   PropertyEntry,
   EquipmentEntry,
   MaterialsEntry,
   HaulingEntry,
+  TypesAndPrices,
 } from "../models/EntrySchemas"
 
 interface ModalProps {
@@ -24,23 +25,64 @@ const AddEntryModal: React.FC<ModalProps> = ({
   hasAccess,
 }) => {
   const [entryType, setEntryType] = useState<string>("property")
-  //const hasAccess = true // Replace this with your actual condition for access
+
+  // Dynamically initialize form data based on entry type
+  const initializeFormData = () => {
+    switch (entryType) {
+      case "materials":
+        return {
+          name: "",
+          description: "",
+          imageUrl: "",
+          typesAndPrices: [],
+          listingWebsites: "",
+          urlEnd: "",
+          isActive: false,
+        } as MaterialsEntry
+
+      case "equipment":
+        return {
+          name: "",
+          description: "",
+          imageUrl: "",
+          listingWebsites: "",
+          urlEnd: "",
+          isActive: false,
+        } as EquipmentEntry
+
+      case "hauling":
+        return {
+          name: "",
+          description: "",
+          price: "0",
+          imageUrl: "",
+          listingWebsites: "",
+          urlEnd: "",
+          isActive: false,
+        } as HaulingEntry
+
+      case "property":
+      default:
+        return {
+          name: "",
+          address: "",
+          squareFootage: "0",
+          price: "0",
+          description: "",
+          imageUrl: "",
+          isRental: false,
+          listingWebsites: "",
+          urlEnd: "",
+          isActive: false,
+        } as PropertyEntry
+    }
+  }
 
   const [formData, setFormData] = useState<
     PropertyEntry | EquipmentEntry | MaterialsEntry | HaulingEntry
-  >({
-    name: "",
-    address: "",
-    squareFootage: "0",
-    price: "0",
-    description: "",
-    imageUrl: "",
-    isRental: false,
-    listingWebsites: "",
-    urlEnd: "",
-    isActive: false,
-  })
+  >(initializeFormData)
 
+  // Generic change handler
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -51,6 +93,7 @@ const AddEntryModal: React.FC<ModalProps> = ({
     }))
   }
 
+  // Checkbox change handler
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target
     setFormData((prev) => ({
@@ -59,6 +102,7 @@ const AddEntryModal: React.FC<ModalProps> = ({
     }))
   }
 
+  // Array change handler for `property`
   const handleArrayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     const arrayValue = value.split(",").map((item) => item.trim())
@@ -68,15 +112,53 @@ const AddEntryModal: React.FC<ModalProps> = ({
     }))
   }
 
+  // Materials-specific handlers
+  const handleTypesAndPricesChange = (
+    index: number,
+    field: keyof TypesAndPrices,
+    value: string
+  ) => {
+    setFormData((prev) => {
+      const updatedFormData = { ...prev } as MaterialsEntry
+      const updatedTypesAndPrices = [...(updatedFormData.typesAndPrices || [])]
+      updatedTypesAndPrices[index] = {
+        ...updatedTypesAndPrices[index],
+        [field]: value,
+      }
+      updatedFormData.typesAndPrices = updatedTypesAndPrices
+      return updatedFormData
+    })
+  }
+
+  const addTypeAndPrice = () => {
+    setFormData((prev) => {
+      const updatedFormData = { ...prev } as MaterialsEntry
+      updatedFormData.typesAndPrices = [
+        ...(updatedFormData.typesAndPrices || []),
+        { type: "", deliveryPrice: "", pickupPrice: "" },
+      ]
+      return updatedFormData
+    })
+  }
+
+  const removeTypeAndPrice = (index: number) => {
+    setFormData((prev) => {
+      const updatedFormData = { ...prev } as MaterialsEntry
+      updatedFormData.typesAndPrices = (
+        updatedFormData.typesAndPrices || []
+      ).filter((_, i) => i !== index)
+      return updatedFormData
+    })
+  }
+
+  // Form submission handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     try {
       const response = await fetch(`/api/${entryType}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       })
 
@@ -92,6 +174,7 @@ const AddEntryModal: React.FC<ModalProps> = ({
     }
   }
 
+  // Render the appropriate form fields
   const renderFields = () => {
     switch (entryType) {
       case "property":
@@ -119,6 +202,9 @@ const AddEntryModal: React.FC<ModalProps> = ({
             formData={formData as MaterialsEntry}
             handleChange={handleChange}
             handleCheckboxChange={handleCheckboxChange}
+            handleTypesAndPricesChange={handleTypesAndPricesChange}
+            addTypeAndPrice={addTypeAndPrice}
+            removeTypeAndPrice={removeTypeAndPrice}
           />
         )
 
@@ -153,18 +239,7 @@ const AddEntryModal: React.FC<ModalProps> = ({
                 value={entryType}
                 onChange={(e) => {
                   setEntryType(e.target.value)
-                  setFormData({
-                    name: "",
-                    address: "",
-                    squareFootage: "0",
-                    price: "0",
-                    description: "",
-                    imageUrl: "",
-                    isRental: false,
-                    listingWebsites: "",
-                    urlEnd: "",
-                    isActive: false,
-                  })
+                  setFormData(initializeFormData())
                 }}
                 className="p-2 border text-black"
               >
@@ -196,7 +271,6 @@ const AddEntryModal: React.FC<ModalProps> = ({
         ) : (
           <div className="flex flex-col items-center align-middle">
             <p>You do not have access to this content.</p>
-
             <button
               onClick={onClose}
               className="bg-red-500 text-white p-2 px-10 rounded"

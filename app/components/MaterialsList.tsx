@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react"
 import { useTable, useSortBy, Column } from "react-table"
 import { fetchData } from "../lib/fetchData"
-import { formatStringAsNumber } from "../lib/helpers"
-import { MaterialsEntry } from "../models/EntrySchemas"
+import { MaterialsEntry, TypesAndPrices } from "../models/EntrySchemas"
 
 import { UseSortByColumnOptions, UseSortByColumnProps } from "react-table"
 
+// Extend react-table for TypeScript support
 declare module "react-table" {
   export interface ColumnInstance<D extends object = {}>
     extends UseSortByColumnProps<D> {}
@@ -24,7 +24,7 @@ const MaterialsList = ({ isActiveFilter }: MaterialsListProps) => {
     fetchData("/api/materials").then((data) => setMaterials(data))
   }, [])
 
-  // Filter the materials based on the isActive filter
+  // Filter materials based on the isActive filter
   const filteredMaterials = useMemo(
     () =>
       materials.filter((material) =>
@@ -33,6 +33,7 @@ const MaterialsList = ({ isActiveFilter }: MaterialsListProps) => {
     [materials, isActiveFilter]
   )
 
+  // Define columns for the table
   const columns: Column<MaterialsEntry>[] = useMemo(
     () => [
       {
@@ -40,28 +41,39 @@ const MaterialsList = ({ isActiveFilter }: MaterialsListProps) => {
         accessor: "name",
       },
       {
-        Header: "Delivery Price",
-        accessor: "deliveryPrice",
-        Cell: ({ value }: { value: string }) =>
-          `$${formatStringAsNumber(value)}`,
+        Header: "Description",
+        accessor: "description",
       },
       {
-        Header: "Pickup Price",
-        accessor: "pickupPrice",
-        Cell: ({ value }: { value: string }) =>
-          `$${formatStringAsNumber(value)}`,
-      },
-      /*
-      {
-        Header: "Active",
-        accessor: "isActive",
-        Cell: ({ value }: { value: boolean }) => (value ? "Yes" : "No"),
+        Header: "Types and Prices",
+        accessor: "typesAndPrices",
+        Cell: ({ value }: { value: TypesAndPrices[] | undefined }) => {
+          if (!value || value.length === 0)
+            return <span>No data available</span>
+          return (
+            <ul>
+              {value.map((entry) => (
+                <li
+                  className="border border-gray-300 rounded-lg p-2 shadow-sm"
+                  key={entry.type}
+                >
+                  <strong>{entry.type}:</strong> Delivery - $
+                  {entry.deliveryPrice}, Pickup - ${entry.pickupPrice}
+                </li>
+              ))}
+            </ul>
+          )
+        },
       },
       {
         Header: "Listing Websites",
         accessor: "listingWebsites",
       },
-      */
+      {
+        Header: "Active",
+        accessor: "isActive",
+        Cell: ({ value }: { value: boolean }) => (value ? "Yes" : "No"),
+      },
     ],
     []
   )
@@ -82,7 +94,7 @@ const MaterialsList = ({ isActiveFilter }: MaterialsListProps) => {
               {headerGroup.headers.map((column) => (
                 <th
                   {...column.getHeaderProps(column.getSortByToggleProps())}
-                  className="md:px-4 md:py-2  border border-black"
+                  className="md:px-4 md:py-2 border border-black"
                   key={column.id}
                 >
                   {column.render("Header")}
@@ -104,9 +116,13 @@ const MaterialsList = ({ isActiveFilter }: MaterialsListProps) => {
             return (
               <tr
                 {...row.getRowProps()}
-                className="hover:bg-gray-700 cursor-pointer"
+                className="hover:bg-gray-200 cursor-pointer"
                 key={row.id}
-                onClick={() => (window.location.href = row.original.urlEnd)}
+                onClick={() =>
+                  row.original.urlEnd
+                    ? (window.location.href = row.original.urlEnd)
+                    : alert("No URL available for this material.")
+                }
               >
                 {row.cells.map((cell) => (
                   <td

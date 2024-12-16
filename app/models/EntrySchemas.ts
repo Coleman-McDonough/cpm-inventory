@@ -54,26 +54,28 @@ export interface UpdateEquipmentEntry {
   isActive?: boolean
 }
 
+export interface TypesAndPrices {
+  type: string
+  deliveryPrice: string
+  pickupPrice: string
+}
+
 export interface MaterialsEntry {
   _id?: string | ObjectId
   name: string
   description: string
   imageUrl: string
-  deliveryPrice: string
-  pickupPrice: string
+  typesAndPrices: TypesAndPrices[] // Array of types and prices
   listingWebsites: string
-  urlEnd: string // Add URL field for material page
+  urlEnd: string
   isActive: boolean
-
-  // Define other fields as necessary
 }
 
 export interface UpdateMaterialsEntry {
   name?: string
   description?: string
   imageUrl?: string
-  deliveryPrice?: string
-  pickupPrice?: string
+  typesAndPrices?: TypesAndPrices[] // Optional for updates
   listingWebsites?: string
   urlEnd?: string
   isActive?: boolean

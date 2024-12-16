@@ -1,3 +1,4 @@
+// app/api/materials/route.ts
 import { NextRequest, NextResponse } from "next/server"
 import {
   connectToMongodbEquipment,
@@ -105,17 +106,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       name,
       description,
       imageUrl,
-      deliveryPrice,
-      pickupPrice,
+      typesAndPrices,
       listingWebsites,
       urlEnd,
       isActive,
     } = requestBody
 
     const { db } = await connectToMongodbMaterials()
+    const { db: dbHauling } = await connectToMongodbHauling()
     const { db: dbProperties } = await connectToMongodbProperties()
     const { db: dbEquipment } = await connectToMongodbEquipment()
-    const { db: dbHauling } = await connectToMongodbHauling()
 
     const uniqueUrlEnd = await generateUniqueUrlEnd(
       dbProperties,
@@ -125,13 +125,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       urlEnd
     )
 
-    // Insert the new material
     const newMaterial: MaterialsEntry = {
       name,
       description,
       imageUrl,
-      deliveryPrice,
-      pickupPrice,
+      typesAndPrices,
       listingWebsites,
       urlEnd: uniqueUrlEnd,
       isActive,
@@ -141,22 +139,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .collection<MaterialsEntry>("materials")
       .insertOne(newMaterial)
 
-    if (result.acknowledged) {
-      return NextResponse.json(
-        { message: "Material added successfully", _id: result.insertedId },
-        { status: 201 }
-      )
-    } else {
-      return NextResponse.json(
-        { message: "Failed to add material" },
-        { status: 500 }
-      )
-    }
+    return result.acknowledged
+      ? NextResponse.json(
+          { message: "Material added successfully", _id: result.insertedId },
+          { status: 201 }
+        )
+      : NextResponse.json(
+          { message: "Failed to add material" },
+          { status: 500 }
+        )
   } catch (error) {
     if (error instanceof Error) {
-      console.error("Error handling POST request:", error.message)
+      console.error("Error fetching data from MongoDB:", error.message)
       return NextResponse.json(
-        { message: `Failed to create material: ${error.message}` },
+        { message: `Failed to fetch data: ${error.message}` },
         { status: 500 }
       )
     }
@@ -173,69 +169,31 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const requestBody = await request.json()
     const { _id, ...updateData } = requestBody
 
-    if (!_id) {
+    if (!_id)
       return NextResponse.json({ message: "_id is required" }, { status: 400 })
-    }
 
     const { db } = await connectToMongodbMaterials()
-    const { db: dbProperties } = await connectToMongodbProperties()
-    const { db: dbEquipment } = await connectToMongodbEquipment()
-    const { db: dbHauling } = await connectToMongodbHauling()
-
-    const objectId = typeof _id === "string" ? new ObjectId(_id) : _id
-
-    const existingProperty = await db
-      .collection<MaterialsEntry>("materials")
-      .findOne({ _id: objectId })
-
-    let uniqueUrlEnd = updateData.urlEnd
-
-    if (
-      existingProperty &&
-      updateData.urlEnd &&
-      updateData.urlEnd !== existingProperty.urlEnd
-    ) {
-      uniqueUrlEnd = await generateUniqueUrlEnd(
-        dbProperties,
-        dbEquipment,
-        db,
-        dbHauling,
-        updateData.urlEnd
-      )
-    }
+    const objectId = new ObjectId(_id)
 
     const updateObject = {
       $set: {
         ...updateData,
-        name: updateData.name || "",
-        description: updateData.description || "",
-        imageUrl: updateData.imageUrl || "",
-        deliveryPrice: updateData.deliveryPrice || "",
-        pickupPrice: updateData.pickupPrice || "",
-        listingWebsites: updateData.listingWebsites || "",
-        urlEnd: uniqueUrlEnd || "",
-        isActive: updateData.isActive || false,
+        typesAndPrices: updateData.typesAndPrices || [],
       },
     }
 
-    // Update the material using _id
     const result = await db
       .collection<MaterialsEntry>("materials")
       .updateOne({ _id: objectId }, updateObject, { upsert: true })
 
-    if (result.matchedCount === 0 && result.upsertedCount > 0) {
-      return NextResponse.json(
-        { message: "New material added", _id: objectId },
-        { status: 201 }
-      )
-    } else if (result.modifiedCount > 0) {
-      return NextResponse.json(
-        { message: "Material updated successfully", _id: objectId },
-        { status: 200 }
-      )
-    } else {
-      return NextResponse.json({ message: "No changes made" }, { status: 200 })
-    }
+    return NextResponse.json(
+      {
+        message: result.modifiedCount
+          ? "Material updated successfully"
+          : "No changes made",
+      },
+      { status: 200 }
+    )
   } catch (error) {
     if (error instanceof Error) {
       console.error("Error handling PUT request:", error.message)

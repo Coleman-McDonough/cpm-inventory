@@ -128,12 +128,15 @@ export default async function PropertyOrEquipmentOrMaterialOrHaulingPage({
       {type === "materials" && (
         <>
           <p className="border-2 p-1">
-            <strong>Delivery Price:</strong> $
-            {formatStringAsNumber((entry as MaterialsEntry).deliveryPrice)}
-          </p>
-          <p className="border-2 p-1">
-            <strong>Pickup Price:</strong> $
-            {formatStringAsNumber((entry as MaterialsEntry).pickupPrice)}
+            <ul>
+              {(entry as MaterialsEntry).typesAndPrices.map((entry) => (
+                <li key={entry.type}>
+                  <strong>{entry.type}:</strong> Delivery - $
+                  {formatStringAsNumber(entry.deliveryPrice)}, Pickup - $
+                  {formatStringAsNumber(entry.pickupPrice)}
+                </li>
+              ))}
+            </ul>
           </p>
         </>
       )}
