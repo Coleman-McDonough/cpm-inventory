@@ -183,8 +183,8 @@ export default function ClientSideComponent({
 
       {/* Modal for updating selected item */}
       {isModalOpen && selectedItem && (
-        <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-75 flex justify-center items-center">
-          <div className="bg-white p-4 rounded shadow-lg w-1/2">
+        <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-75 flex justify-center items-center overflow-auto">
+          <div className="bg-white p-4 rounded shadow-lg w-1/2 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Update Item</h2>
 
             {type === "property" && (
