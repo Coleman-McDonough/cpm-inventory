@@ -4,6 +4,7 @@ import { fetchData } from "../lib/fetchData"
 import { MaterialsEntry, TypesAndPrices } from "../models/EntrySchemas"
 
 import { UseSortByColumnOptions, UseSortByColumnProps } from "react-table"
+import { isNumeric } from "../lib/helpers"
 
 // Extend react-table for TypeScript support
 declare module "react-table" {
@@ -57,8 +58,14 @@ const MaterialsList = ({ isActiveFilter }: MaterialsListProps) => {
                   className="border border-gray-300 rounded-lg p-2 shadow-sm"
                   key={entry.type}
                 >
-                  <strong>{entry.type}:</strong> Delivery - $
-                  {entry.deliveryPrice}, Pickup - ${entry.pickupPrice}
+                  <strong>
+                    {entry.type}
+                    {`${entry.type === "" ? "" : ":"}`}
+                  </strong>{" "}
+                  Delivery - {`${isNumeric(entry.deliveryPrice) ? "$" : ""}`}
+                  {entry.deliveryPrice}, Pickup -{" "}
+                  {`${isNumeric(entry.deliveryPrice) ? "$" : ""}`}
+                  {entry.pickupPrice}
                 </li>
               ))}
             </ul>

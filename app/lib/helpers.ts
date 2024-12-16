@@ -88,3 +88,8 @@ export async function deleteItem(
 
   return response.json()
 }
+
+// Helper to check if a string is a valid number
+export function isNumeric(input: string): boolean {
+  return /^[0-9]+$/.test(input)
+}
