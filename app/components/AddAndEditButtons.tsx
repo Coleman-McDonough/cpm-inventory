@@ -1,4 +1,4 @@
-"use client" // Mark this as a client-side component
+"use client"
 import { useState } from "react"
 import { useSession } from "next-auth/react"
 import {
@@ -6,6 +6,7 @@ import {
   EquipmentEntry,
   MaterialsEntry,
   HaulingEntry,
+  TypesAndPrices,
 } from "../models/EntrySchemas"
 import PropertyForm from "../components/PropertyForm"
 import EquipmentForm from "../components/EquipmentForm"
@@ -121,6 +122,45 @@ export default function ClientSideComponent({
     }
   }
 
+  // Handle updates to the `typesAndPrices` array for materials
+  const handleTypesAndPricesChange = (
+    index: number,
+    field: keyof TypesAndPrices,
+    value: string
+  ) => {
+    if (selectedItem && type === "materials") {
+      const updatedItem = { ...selectedItem } as MaterialsEntry
+      const updatedTypesAndPrices = [...(updatedItem.typesAndPrices || [])]
+      updatedTypesAndPrices[index] = {
+        ...updatedTypesAndPrices[index],
+        [field]: value,
+      }
+      updatedItem.typesAndPrices = updatedTypesAndPrices
+      setSelectedItem(updatedItem)
+    }
+  }
+
+  const addTypeAndPrice = () => {
+    if (selectedItem && type === "materials") {
+      const updatedItem = { ...selectedItem } as MaterialsEntry
+      updatedItem.typesAndPrices = [
+        ...(updatedItem.typesAndPrices || []),
+        { type: "", deliveryPrice: "", pickupPrice: "" },
+      ]
+      setSelectedItem(updatedItem)
+    }
+  }
+
+  const removeTypeAndPrice = (index: number) => {
+    if (selectedItem && type === "materials") {
+      const updatedItem = { ...selectedItem } as MaterialsEntry
+      updatedItem.typesAndPrices = (updatedItem.typesAndPrices || []).filter(
+        (_, i) => i !== index
+      )
+      setSelectedItem(updatedItem)
+    }
+  }
+
   return (
     <div>
       {/* Conditionally render Edit and Delete buttons if the user has access */}
@@ -169,6 +209,9 @@ export default function ClientSideComponent({
                 formData={selectedItem as MaterialsEntry}
                 handleChange={handleChange}
                 handleCheckboxChange={handleCheckboxChange}
+                handleTypesAndPricesChange={handleTypesAndPricesChange}
+                addTypeAndPrice={addTypeAndPrice}
+                removeTypeAndPrice={removeTypeAndPrice}
               />
             )}
 
