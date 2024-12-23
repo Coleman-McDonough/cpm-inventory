@@ -142,7 +142,7 @@ export default async function PropertyOrEquipmentOrMaterialOrHaulingPage({
       )}
 
       {/* Common fields for all types */}
-      <p className="border-2 p-1">
+      <p className="whitespace-pre-wrap border-2 p-1">
         <strong>Description:</strong> {entry.description}
       </p>
       <p className="border-2 p-1">
