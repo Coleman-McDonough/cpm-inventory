@@ -7,6 +7,7 @@ import {
 } from "../models/EntrySchemas"
 import { formatStringAsNumber } from "../lib/helpers"
 import ClientSideComponent from "../components/AddAndEditButtons" // New client-side component for session handling
+import TextWithLinks from "../components/TextWithLinks"
 
 export const revalidate = 0 // Disable ISR and ensure the page is always fetched dynamically
 
@@ -14,6 +15,10 @@ interface Props {
   params: {
     urlEnd: string // Dynamic route parameter
   }
+}
+
+interface TextWithLinksProps {
+  text: string
 }
 
 // Fetch data from either property, equipment, or materials based on the type
@@ -143,8 +148,9 @@ export default async function PropertyOrEquipmentOrMaterialOrHaulingPage({
 
       {/* Common fields for all types */}
       <p className="whitespace-pre-wrap border-2 p-1">
-        <strong>Description:</strong> {entry.description}
+        <strong>Description:</strong> <TextWithLinks text={entry.description} />
       </p>
+
       <p className="border-2 p-1">
         <strong>Active:</strong> {entry.isActive ? "Yes" : "No"}
       </p>
