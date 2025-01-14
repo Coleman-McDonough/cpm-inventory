@@ -41,10 +41,12 @@ const MaterialsList = ({ isActiveFilter }: MaterialsListProps) => {
         Header: "Material Name",
         accessor: "name",
       },
+      /*
       {
         Header: "Description",
         accessor: "description",
       },
+      */
       {
         Header: "Types and Prices",
         accessor: "typesAndPrices",
@@ -71,10 +73,6 @@ const MaterialsList = ({ isActiveFilter }: MaterialsListProps) => {
             </ul>
           )
         },
-      },
-      {
-        Header: "Listing Websites",
-        accessor: "listingWebsites",
       },
       {
         Header: "Active",

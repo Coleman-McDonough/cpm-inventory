@@ -44,10 +44,12 @@ const PropertyList = ({ isActiveFilter }: PropertyListProps) => {
         Header: "Property Name",
         accessor: "name",
       },
+      /*
       {
         Header: "Address",
         accessor: "address",
       },
+      */
       {
         Header: "Square Footage",
         accessor: "squareFootage",

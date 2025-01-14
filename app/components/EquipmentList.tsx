@@ -42,12 +42,14 @@ const EquipmentList = ({ isActiveFilter }: EquipmentListProps) => {
         Header: "Equipment Name",
         accessor: "name",
       },
+      /*
       {
         Header: "Description",
         accessor: "description",
         Cell: ({ value }: { value: string }) =>
           value.length > 50 ? `${value.substring(0, 50)}...` : value, // Truncate long descriptions
       },
+      */
       {
         Header: "Price",
         accessor: "price",

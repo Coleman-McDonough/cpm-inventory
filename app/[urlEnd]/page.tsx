@@ -107,7 +107,7 @@ export default async function PropertyOrEquipmentOrMaterialOrHaulingPage({
             {formatStringAsNumber((entry as PropertyEntry).squareFootage)}
           </p>
           <p className="border-2 p-1">
-            <strong>Rental Status:</strong>{" "}
+            <strong>Rent/Sale:</strong>{" "}
             {(entry as PropertyEntry).isRental ? "For Rent" : "For Sale"}
           </p>
         </>
