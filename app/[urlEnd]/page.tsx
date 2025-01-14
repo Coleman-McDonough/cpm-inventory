@@ -157,7 +157,11 @@ export default async function PropertyOrEquipmentOrMaterialOrHaulingPage({
       {type !== "hauling" && (
         <p className="border-2 p-1">
           <strong>Listing Websites:</strong>{" "}
-          {"listingWebsites" in entry ? entry.listingWebsites : "N/A"}
+          {"listingWebsites" in entry ? (
+            <TextWithLinks text={entry.listingWebsites} />
+          ) : (
+            "N/A"
+          )}
         </p>
       )}
     </div>
